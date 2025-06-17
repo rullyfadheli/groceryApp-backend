@@ -14,17 +14,29 @@ class UserServices {
     email: string;
     mobile: number;
   }) {
-    await userRepositories.register({
-      username,
-      password,
-      email,
-      refresh_token,
-      mobile,
-    });
+    try {
+      await userRepositories.register({
+        username,
+        password,
+        email,
+        refresh_token,
+        mobile,
+      });
+    } catch (err) {
+      if (err) {
+        console.log(err);
+        return null;
+      }
+    }
   }
 
   async getUserByEmail(email: string) {
-    return await userRepositories.getUserByEmail(email);
+    try {
+      return await userRepositories.getUserByEmail(email);
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
   }
 }
 

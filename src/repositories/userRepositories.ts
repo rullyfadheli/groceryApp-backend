@@ -18,13 +18,18 @@ class UserRepositories {
     (username, password, email, refresh_token, mobile) 
     values (${username}, ${password},${email},${refresh_token},${mobile})
     `;
-
     console.log(query);
+    return query;
   }
 
   async getUserByEmail(email: string) {
-    const query = await sql`SELECT email FROM users WHERE email = ${email} `;
+    const query = await sql`SELECT * FROM users WHERE email = ${email} `;
+    console.log(query);
     return query;
+  }
+
+  async loginUser() {
+    const qeury = "  users () values ()";
   }
 }
 
