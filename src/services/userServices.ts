@@ -1,16 +1,14 @@
 import userRepositories from "../repositories/userRepositories.js";
 
 class UserServices {
-  async register({
+  public async register({
     username,
     password,
     email,
-    refresh_token,
     mobile,
   }: {
     username: string;
     password: string;
-    refresh_token: string;
     email: string;
     mobile: number;
   }) {
@@ -19,23 +17,31 @@ class UserServices {
         username,
         password,
         email,
-        refresh_token,
         mobile,
       });
     } catch (err) {
       if (err) {
         console.log(err);
-        return null;
+        return false;
       }
     }
   }
 
-  async getUserByEmail(email: string) {
+  public async getUserByEmail(email: string) {
     try {
       return await userRepositories.getUserByEmail(email);
     } catch (err) {
       console.log(err);
-      return null;
+      return false;
+    }
+  }
+
+  public async loginUser(refresh_token: string) {
+    try {
+      await userRepositories.loginUser(refresh_token);
+    } catch (error) {
+      console.log(error);
+      return false;
     }
   }
 }

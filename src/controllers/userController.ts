@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import userServices from "../services/userServices.js";
+import SendMail from "./sendMail.js";
 
 class UserController {
   private username?: string;
@@ -23,7 +24,7 @@ class UserController {
   }
 
   // Register
-  async register(response: Response): Promise<void> {
+  public async register(response: Response): Promise<void> {
     if (!this.username || !this.password || !this.email || !this.mobile) {
       response.status(400).json([{ message: "Please fill required fields" }]);
       return;
@@ -50,51 +51,52 @@ class UserController {
       const salt = await bcrypt.genSalt(saltRounds);
       const hashedPassword = await bcrypt.hash(this.password, salt);
 
+      const REGISTER_TOKEN_SECRET = process.env.REGISTER_TOKEN_SECRET as string;
+
+      if (!REGISTER_TOKEN_SECRET) {
+        response.status(400).json([{ message: "Server misconfiguration" }]);
+        return;
+      }
+
       if (!hashedPassword) {
         response.status(400).json([{ message: "Failed to hash password" }]);
         return;
       }
+      const token = jwt.sign(
+        {
+          email: this.email,
+          username: this.username,
+          mobile: this.mobile,
+        },
+        REGISTER_TOKEN_SECRET,
+        { expiresIn: "5m" }
+      );
 
-      const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
-      const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+      const mailer = new SendMail(this.email, token);
+      await mailer.sendMail();
 
-      if (!REFRESH_TOKEN_SECRET || !ACCESS_TOKEN_SECRET) {
-        response.status(500).json([{ message: "Server misconfiguration." }]);
+      if (!mailer) {
+        response
+          .status(400)
+          .json([{ message: "Server error, failed to register" }]);
         return;
       }
 
-      let refresh_token: string;
-      let access_token: string;
-
-      try {
-        refresh_token = jwt.sign(
-          { username: this.username, email: this.email, mobile: this.mobile },
-          REFRESH_TOKEN_SECRET,
-          { expiresIn: "2d" }
-        );
-        access_token = jwt.sign(
-          { username: this.username, email: this.email, mobile: this.mobile },
-          ACCESS_TOKEN_SECRET,
-          { expiresIn: "10m" }
-        );
-      } catch (jwtError) {
-        console.error("JWT Error:", jwtError);
-        response.status(500).json([{ message: "Token generation failed." }]);
-        return;
-      }
-
-      await userServices.register({
+      const registerToDB = await userServices.register({
         username: this.username,
         password: hashedPassword,
         email: this.email,
         mobile: this.mobile,
-        refresh_token,
       });
 
-      response.cookie("FRgrocery", refresh_token, {
-        maxAge: 1000 * 60 * 60 * 24 * 2,
-      });
-      response.status(200).json([{ access_token }]);
+      if (!registerToDB) {
+        response
+          .status(400)
+          .json([{ message: "Server error, failed to register" }]);
+        return;
+      }
+
+      response.status(200).json([{ messasge: "Register success" }]);
       return;
     } catch (error) {
       console.error("Register Error:", error);
@@ -104,10 +106,11 @@ class UserController {
           { message: "Server error, failed to register, try again later" },
         ]);
     }
+    return;
   }
 
   // Login
-  async login(response: Response): Promise<void> {
+  public async login(response: Response): Promise<void> {
     try {
       const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET as string;
       const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET as string;
@@ -130,8 +133,8 @@ class UserController {
 
       if (!userData || !userData[0]) {
         response
-          .status(400)
-          .json([{ message: "Server error, please try again later" }]);
+          .status(404)
+          .json([{ message: "User not found, please register" }]);
         return;
       }
 
@@ -145,25 +148,44 @@ class UserController {
         return;
       }
 
-      const access_token = jwt.sign(
-        {
-          username: this.username,
-          email: this.email,
-          mobile: this.mobile,
-        },
-        ACCESS_TOKEN_SECRET,
-        { expiresIn: "10m" }
-      );
+      let access_token: string;
+      let refresh_token: string;
 
-      const refresh_token = jwt.sign(
-        {
-          username: this.username,
-          email: this.email,
-          mobile: this.mobile,
-        },
-        ACCESS_TOKEN_SECRET,
-        { expiresIn: "2d" }
-      );
+      try {
+        access_token = jwt.sign(
+          {
+            username: this.username,
+            email: this.email,
+            mobile: this.mobile,
+          },
+          ACCESS_TOKEN_SECRET,
+          { expiresIn: "10m" }
+        );
+
+        refresh_token = jwt.sign(
+          {
+            username: this.username,
+            email: this.email,
+            mobile: this.mobile,
+          },
+          ACCESS_TOKEN_SECRET,
+          { expiresIn: "2d" }
+        );
+      } catch (jwtError) {
+        console.log(jwtError);
+        response.status(401).json([{ message: "Token generation failed" }]);
+        return;
+      }
+
+      const storeTokenToDB = await userServices.loginUser(refresh_token);
+
+      if (!storeTokenToDB) {
+        response.status(400).json([
+          {
+            message: "Server error, please try again",
+          },
+        ]);
+      }
 
       response.cookie("FRgrocery", refresh_token, {
         maxAge: 1000 * 60 * 60 * 24 * 2,
@@ -178,6 +200,13 @@ class UserController {
         .json([{ message: "User not found, please register" }]);
     }
     return;
+  }
+
+  // Logout
+  public async logout(response: Response) {
+    if (!this.email) {
+      response.status(400).json([{ message: "Server error, email not found" }]);
+    }
   }
 }
 
