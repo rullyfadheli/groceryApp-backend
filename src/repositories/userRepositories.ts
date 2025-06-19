@@ -35,6 +35,11 @@ class UserRepositories {
       await sql`UPDATE users SET refresh_token = null WHERE email = ${email}`;
     return query;
   }
+
+  public async getRefreshToken(token: string) {
+    const query = await sql`SELECT * FROM users WHERE refresh_token = ${token}`;
+    return query;
+  }
 }
 
 export default new UserRepositories();

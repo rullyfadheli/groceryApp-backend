@@ -21,6 +21,7 @@ class UserController {
     this.email = request.body?.email;
     this.mobile = request.body?.mobile;
     this.refresh_token = request.cookies?.FRgrocery;
+    this.access_token = request.headers?.authorization;
   }
 
   // Register
@@ -168,7 +169,7 @@ class UserController {
             email: this.email,
             mobile: this.mobile,
           },
-          ACCESS_TOKEN_SECRET,
+          REFRESH_TOKEN_SECRET,
           { expiresIn: "2d" }
         );
       } catch (jwtError) {
@@ -225,6 +226,59 @@ class UserController {
     response.clearCookie("FRgrocery");
     response.status(200).json([{ message: "Logout success" }]);
     return;
+  }
+
+  // Refreshing session token
+  public async generateUserToken(response: Response) {
+    try {
+      if (!this.refresh_token) {
+        response
+          .status(401)
+          .json([{ message: "Session expired, please login" }]);
+        return;
+      }
+
+      const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET as string;
+      const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET as string;
+
+      if (!REFRESH_TOKEN_SECRET) {
+        response.status(400).json([{ message: "Server misconfiguration" }]);
+        return;
+      }
+      const refresh_token: string = this.refresh_token;
+      const userDB = userServices.verifyUserToken(refresh_token);
+
+      if (!userDB) {
+        response
+          .status(401)
+          .json([{ message: "Session expired, please login" }]);
+        return;
+      }
+
+      const decoded_token = jwt.verify(refresh_token, REFRESH_TOKEN_SECRET) as {
+        username: string;
+        email: string;
+        mobile: number;
+      };
+
+      const { username, email, mobile } = decoded_token;
+
+      if (!username || !email || !mobile) {
+        response.status(401).json([{ message: "Invalid token" }]);
+        return;
+      }
+
+      const newAccessToken: string = jwt.sign(
+        { username, email, mobile },
+        ACCESS_TOKEN_SECRET
+      );
+
+      response.status(200).json([{ newAccessToken }]);
+      return;
+    } catch (error) {
+      console.log(error);
+      response.status(401).json([{ message: "Invalid token" }]);
+    }
   }
 }
 

@@ -56,6 +56,15 @@ class UserServices {
       return false;
     }
   }
+
+  public async verifyUserToken(token: string) {
+    try {
+      return await userRepositories.getRefreshToken(token);
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
 }
 
 export default new UserServices();

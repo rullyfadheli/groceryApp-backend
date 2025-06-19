@@ -1,6 +1,9 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import UserController from "../controllers/userController.js";
 import express from "express";
+
+// middleware
+import verifyUserToken from "../controllers/verifyUserToken.js";
 
 const userRouter = express.Router();
 
@@ -19,5 +22,19 @@ userRouter.put("/logout", (request: Request, response: Response) => {
   const user = new UserController(request);
   user.logout(response);
 });
+
+userRouter.put("/refresh-token", (request: Request, response: Response) => {
+  const user = new UserController(request);
+  user.generateUserToken(response);
+});
+
+userRouter.get(
+  "/profile",
+  verifyUserToken,
+  (request: Request, response: Response) => {
+    const user = new UserController(request);
+    // user.getProfile(response);
+  }
+);
 
 export default userRouter;
