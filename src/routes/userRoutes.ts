@@ -15,4 +15,9 @@ userRouter.post("/login", (request: Request, response: Response) => {
   user.login(response);
 });
 
+userRouter.put("/logout", (request: Request, response: Response) => {
+  const user = new UserController(request);
+  user.logout(response);
+});
+
 export default userRouter;

@@ -19,6 +19,7 @@ class UserServices {
         email,
         mobile,
       });
+      return true;
     } catch (err) {
       if (err) {
         console.log(err);
@@ -36,9 +37,20 @@ class UserServices {
     }
   }
 
-  public async loginUser(refresh_token: string) {
+  public async loginUser(email: string, refresh_token: string) {
     try {
-      await userRepositories.loginUser(refresh_token);
+      await userRepositories.loginUser(email, refresh_token);
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  public async logoutUser(email: string) {
+    try {
+      await userRepositories.logoutUser(email);
+      return true;
     } catch (error) {
       console.log(error);
       return false;

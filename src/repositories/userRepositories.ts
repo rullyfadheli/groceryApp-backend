@@ -16,18 +16,23 @@ class UserRepositories {
     (username, password, email, refresh_token, mobile) 
     values (${username}, ${password},${email},${mobile})
     `;
-    console.log(query);
     return query;
   }
 
   public async getUserByEmail(email: string) {
     const query = await sql`SELECT * FROM users WHERE email = ${email} `;
-    console.log(query);
     return query;
   }
 
-  public async loginUser(refresh_token: string) {
-    const query = await sql`users (refresh_token) values (${refresh_token})`;
+  public async loginUser(email: string, refresh_token: string) {
+    const query =
+      await sql`UPDATE users SET refresh_token = ${refresh_token} WHERE email = ${email}`;
+    return query;
+  }
+
+  public async logoutUser(email: string) {
+    const query =
+      await sql`UPDATE users SET refresh_token = null WHERE email = ${email}`;
     return query;
   }
 }

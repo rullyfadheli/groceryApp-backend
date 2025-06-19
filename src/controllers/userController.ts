@@ -177,7 +177,10 @@ class UserController {
         return;
       }
 
-      const storeTokenToDB = await userServices.loginUser(refresh_token);
+      const storeTokenToDB = await userServices.loginUser(
+        this.email,
+        refresh_token
+      );
 
       if (!storeTokenToDB) {
         response.status(400).json([
@@ -185,6 +188,7 @@ class UserController {
             message: "Server error, please try again",
           },
         ]);
+        return;
       }
 
       response.cookie("FRgrocery", refresh_token, {
@@ -203,10 +207,24 @@ class UserController {
   }
 
   // Logout
-  public async logout(response: Response) {
+  public async logout(response: Response): Promise<void> {
+    console.log(this.email);
     if (!this.email) {
       response.status(400).json([{ message: "Server error, email not found" }]);
+      return;
     }
+
+    const res = await userServices.logoutUser(this.email);
+    if (!res) {
+      response
+        .status(400)
+        .json([{ message: "Server error, failed to logout" }]);
+      return;
+    }
+
+    response.clearCookie("FRgrocery");
+    response.status(200).json([{ message: "Logout success" }]);
+    return;
   }
 }
 

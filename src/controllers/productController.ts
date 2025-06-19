@@ -5,7 +5,7 @@ import productServices from "../services/productServices.js";
 import { type Product } from "../type/productType.js";
 import UploadImage from "./imageUpload.js";
 class ProductControllers {
-  async getAllProduct(
+  public async getAllProduct(
     request: Request,
     response: Response
   ): Promise<void | Product> {
@@ -21,7 +21,7 @@ class ProductControllers {
     return;
   }
 
-  async getProductByCategory(
+  public async getProductByCategory(
     request: Request,
     response: Response
   ): Promise<void | Product> {
@@ -81,7 +81,7 @@ class ProductControllers {
     return;
   }
 
-  async getBestDealProduct(
+  public async getBestDealProduct(
     request: Request,
     response: Response
   ): Promise<void | Product> {
@@ -96,7 +96,10 @@ class ProductControllers {
     return;
   }
 
-  async insertNewProduct(request: Request, response: Response): Promise<void> {
+  public async insertNewProduct(
+    request: Request,
+    response: Response
+  ): Promise<void> {
     type ProductData = {
       name: string;
       sku: string;
