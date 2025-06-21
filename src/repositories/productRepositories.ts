@@ -14,7 +14,13 @@ class ProductRepositories {
   }
 
   async getBestDeal() {
-    const query = await sql`SELECT * FROM products ORDER BY sold DESC LIMIT 3`;
+    const query = await sql`
+    SELECT * 
+    FROM products p 
+    JOIN discount d ON d.product_id = p.id 
+    ORDER BY discount_percentage DESC 
+    LIMIT 10
+  `;
     return query;
   }
 

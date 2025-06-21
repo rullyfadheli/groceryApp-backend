@@ -5,10 +5,13 @@ import productServices from "../services/productServices.js";
 import { type Product } from "../type/productType.js";
 import UploadImage from "./imageUpload.js";
 class ProductControllers {
-  public async getAllProduct(
-    request: Request,
-    response: Response
-  ): Promise<void | Product> {
+  public getCategory?: number;
+
+  constructor(request: Request) {
+    this.getCategory = Number(request.query.category) as number;
+  }
+
+  public async getAllProduct(response: Response): Promise<void | Product> {
     const product = await productServices.getAllProduct();
 
     if (!product || product.length === 0) {
@@ -22,10 +25,9 @@ class ProductControllers {
   }
 
   public async getProductByCategory(
-    request: Request,
     response: Response
   ): Promise<void | Product> {
-    const category: number = Number(request.query.params);
+    const category: number = this.getCategory as number;
     // console.log(category);
 
     if (!category) {
@@ -81,10 +83,7 @@ class ProductControllers {
     return;
   }
 
-  public async getBestDealProduct(
-    request: Request,
-    response: Response
-  ): Promise<void | Product> {
+  public async getBestDealProduct(response: Response): Promise<void | Product> {
     const result = await productServices.getProductBestDeal();
 
     if (!result || result.length === 0) {
@@ -92,7 +91,17 @@ class ProductControllers {
       return;
     }
 
-    response.status(200).json(result);
+    const updatedResult = result.map((value, index) => {
+      const discount = value.discount_percentage;
+      const price = value.price;
+
+      const updatePrice = value.price - (price * discount) / 100;
+      const discount_price = { ...value, final_price: updatePrice };
+      return discount_price;
+    });
+
+    console.log(updatedResult);
+    response.status(200).json(updatedResult);
     return;
   }
 
@@ -113,7 +122,7 @@ class ProductControllers {
 
     const file = request?.file;
 
-    if (!name || !sku || !price || !detail || !file || !category || !file) {
+    if (!name || !sku || !price || !detail || !file || !category) {
       response.status(400).json([{ message: "Please fill required fields" }]);
       return;
     }
@@ -159,6 +168,7 @@ class ProductControllers {
     );
 
     const result = await uploader.uploadImage();
+    uploader.cleanup();
 
     if (!result) {
       response.status(400).json({
@@ -183,4 +193,4 @@ class ProductControllers {
   }
 }
 
-export default new ProductControllers();
+export default ProductControllers;

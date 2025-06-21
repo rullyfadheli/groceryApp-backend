@@ -65,6 +65,16 @@ class UserServices {
       return false;
     }
   }
+
+  public async verifyEmail(verify: boolean, email: string) {
+    try {
+      await userRepositories.updateEmailverification(verify, email);
+      return true;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
 }
 
 export default new UserServices();

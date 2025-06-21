@@ -14,6 +14,7 @@ class UserController {
   private mobile?: number;
   private refresh_token?: string;
   private access_token?: string;
+  private verify_email_token?: string;
 
   constructor(request: Request) {
     this.username = request.body?.username;
@@ -22,6 +23,7 @@ class UserController {
     this.mobile = request.body?.mobile;
     this.refresh_token = request.cookies?.FRgrocery;
     this.access_token = request.headers?.authorization;
+    this.verify_email_token = request.query?.token as string;
   }
 
   // Register
@@ -52,6 +54,11 @@ class UserController {
       const salt = await bcrypt.genSalt(saltRounds);
       const hashedPassword = await bcrypt.hash(this.password, salt);
 
+      if (!hashedPassword) {
+        response.status(400).json([{ message: "Failed to hash password" }]);
+        return;
+      }
+
       const REGISTER_TOKEN_SECRET = process.env.REGISTER_TOKEN_SECRET as string;
 
       if (!REGISTER_TOKEN_SECRET) {
@@ -59,10 +66,6 @@ class UserController {
         return;
       }
 
-      if (!hashedPassword) {
-        response.status(400).json([{ message: "Failed to hash password" }]);
-        return;
-      }
       const token = jwt.sign(
         {
           email: this.email,
@@ -97,7 +100,12 @@ class UserController {
         return;
       }
 
-      response.status(200).json([{ messasge: "Register success" }]);
+      response.status(200).json([
+        {
+          messasge:
+            "Register success, please check your email to verify your registration",
+        },
+      ]);
       return;
     } catch (error) {
       console.error("Register Error:", error);
@@ -108,6 +116,56 @@ class UserController {
         ]);
     }
     return;
+  }
+
+  // Verify registration
+
+  public async verifyRegistration(response: Response): Promise<void> {
+    try {
+      if (
+        !this.verify_email_token ||
+        typeof this.verify_email_token !== "string"
+      ) {
+        console.log(this.verify_email_token);
+        response.status(401).json([{ message: "Token has expired" }]);
+        return;
+      }
+
+      const REGISTER_TOKEN_SECRET = process.env.REGISTER_TOKEN_SECRET as string;
+
+      if (!REGISTER_TOKEN_SECRET) {
+        response.status(401).json([{ message: "Token has expired" }]);
+        return;
+      }
+
+      const decoded_token = jwt.verify(
+        this.verify_email_token,
+        REGISTER_TOKEN_SECRET
+      );
+
+      const { email } = decoded_token as { email: string };
+
+      if (!email) {
+        response.status(401).json([{ message: "Invalid token" }]);
+        return;
+      }
+
+      const verify = await userServices.verifyEmail(true, email);
+
+      if (!verify) {
+        response.status(401).json([{ message: "Token has expired" }]);
+        return;
+      }
+
+      response
+        .status(200)
+        .json([{ message: "The user's email has verified succesfully" }]);
+      return;
+    } catch (error) {
+      console.log(error);
+      response.status(401).json([{ message: "Token has expired" }]);
+      return;
+    }
   }
 
   // Login
@@ -229,7 +287,7 @@ class UserController {
   }
 
   // Refreshing session token
-  public async generateUserToken(response: Response) {
+  public async generateUserToken(response: Response): Promise<void> {
     try {
       if (!this.refresh_token) {
         response
@@ -277,6 +335,48 @@ class UserController {
       return;
     } catch (error) {
       console.log(error);
+      response.status(401).json([{ message: "Invalid token" }]);
+    }
+  }
+
+  public async getUserProfile(response: Response): Promise<void> {
+    try {
+      if (!this.access_token) {
+        response.status(401).json([{ message: "Invalid token, please login" }]);
+        return;
+      }
+
+      const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET as string;
+
+      const split_access_token = this.access_token.split(" ")[1];
+      console.log(split_access_token);
+      if (!ACCESS_TOKEN_SECRET) {
+        response.status(400).json([{ message: "Server misconfiguration" }]);
+        return;
+      }
+
+      const decoded_token = jwt.verify(
+        split_access_token,
+        ACCESS_TOKEN_SECRET
+      ) as {
+        username: string;
+        email: string;
+        mobile: number;
+      };
+
+      const { email } = decoded_token;
+
+      const getDataFromDB = await userServices.getUserByEmail(email);
+
+      if (!getDataFromDB) {
+        response.status(400).json([{ message: "Error, user not found" }]);
+        return;
+      }
+
+      response.status(200).json(getDataFromDB);
+      return;
+    } catch (err) {
+      console.log(err);
       response.status(401).json([{ message: "Invalid token" }]);
     }
   }

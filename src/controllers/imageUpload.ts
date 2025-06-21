@@ -36,7 +36,9 @@ class UploadImage {
   }
 
   public cleanup(): void {
-    this.file = Buffer.from("");
+    if (this.file && this.file.length > 0) {
+      this.file = Buffer.alloc(0);
+    }
     this.fileName = "";
   }
 }

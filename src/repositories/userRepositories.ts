@@ -13,7 +13,7 @@ class UserRepositories {
     mobile: number;
   }) {
     const query = await sql`INSERT INTO users
-    (username, password, email, refresh_token, mobile) 
+    (username, password, email, mobile) 
     values (${username}, ${password},${email},${mobile})
     `;
     return query;
@@ -38,6 +38,12 @@ class UserRepositories {
 
   public async getRefreshToken(token: string) {
     const query = await sql`SELECT * FROM users WHERE refresh_token = ${token}`;
+    return query;
+  }
+
+  public async updateEmailverification(verify: boolean, email: string) {
+    const query =
+      await sql`UPDATE users SET email_verified = ${verify} WHERE email = ${email}`;
     return query;
   }
 }

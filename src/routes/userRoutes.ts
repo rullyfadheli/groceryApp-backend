@@ -3,7 +3,7 @@ import UserController from "../controllers/userController.js";
 import express from "express";
 
 // middleware
-import verifyUserToken from "../controllers/verifyUserToken.js";
+import verifyToken from "../controllers/verifyToken.js";
 
 const userRouter = express.Router();
 
@@ -28,12 +28,17 @@ userRouter.put("/refresh-token", (request: Request, response: Response) => {
   user.generateUserToken(response);
 });
 
+userRouter.put("/verify-email", (request: Request, response: Response) => {
+  const user = new UserController(request);
+  user.verifyRegistration(response);
+});
+
 userRouter.get(
   "/profile",
-  verifyUserToken,
+  verifyToken.verifyUser,
   (request: Request, response: Response) => {
     const user = new UserController(request);
-    // user.getProfile(response);
+    user.getUserProfile(response);
   }
 );
 
