@@ -213,6 +213,7 @@ class UserController {
       try {
         access_token = jwt.sign(
           {
+            id: userData[0].id,
             username: this.username,
             email: this.email,
             mobile: this.mobile,
@@ -223,6 +224,7 @@ class UserController {
 
         refresh_token = jwt.sign(
           {
+            id: userData[0].id,
             username: this.username,
             email: this.email,
             mobile: this.mobile,
@@ -314,24 +316,25 @@ class UserController {
       }
 
       const decoded_token = jwt.verify(refresh_token, REFRESH_TOKEN_SECRET) as {
+        id: string;
         username: string;
         email: string;
         mobile: number;
       };
 
-      const { username, email, mobile } = decoded_token;
+      const { id, username, email, mobile } = decoded_token;
 
-      if (!username || !email || !mobile) {
+      if (!id || !username || !email || !mobile) {
         response.status(401).json([{ message: "Invalid token" }]);
         return;
       }
 
       const newAccessToken: string = jwt.sign(
-        { username, email, mobile },
+        { id, username, email, mobile },
         ACCESS_TOKEN_SECRET
       );
 
-      response.status(200).json([{ newAccessToken }]);
+      response.status(200).json([{ access_token: newAccessToken }]);
       return;
     } catch (error) {
       console.log(error);

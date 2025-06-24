@@ -1,4 +1,4 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import UserController from "../controllers/userController.js";
 import express from "express";
 
@@ -23,7 +23,7 @@ userRouter.put("/logout", (request: Request, response: Response) => {
   user.logout(response);
 });
 
-userRouter.put("/refresh-token", (request: Request, response: Response) => {
+userRouter.get("/token", (request: Request, response: Response) => {
   const user = new UserController(request);
   user.generateUserToken(response);
 });

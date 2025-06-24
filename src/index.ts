@@ -5,6 +5,7 @@ import cors from "cors";
 // route
 import productRouter from "./routes/productRoutes.js";
 import userRouter from "./routes/userRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 const app = express();
 
 const port = 3001;
@@ -20,6 +21,7 @@ app.use(express.json());
 
 app.use("/api", productRouter);
 app.use("/api", userRouter);
+app.use("/api", orderRoutes);
 
 app.listen(port, () => {
   console.log("App is running at port " + port);

@@ -26,7 +26,7 @@ class VerifyToken {
             return;
           }
 
-          req.body = decoded;
+          req.user = decoded;
           next();
         }
       );
