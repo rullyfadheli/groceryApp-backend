@@ -1,19 +1,19 @@
 import sql from "../config/database.js";
 
 class ProductRepositories {
-  async getAllProduct() {
+  public async getAllProduct() {
     const query = await sql`SELECT * FROM products`;
     return query;
   }
 
-  async getProductByCategory(category: string) {
+  public async getProductByCategory(category: string) {
     // console.log(category);
     const query =
       await sql`SELECT * from products WHERE category = ${category}`;
     return query;
   }
 
-  async getBestDeal() {
+  public async getBestDeal() {
     const query = await sql`
     SELECT * 
     FROM products p 
@@ -24,7 +24,7 @@ class ProductRepositories {
     return query;
   }
 
-  async insertNewproduct({
+  public async insertNewproduct({
     name,
     sku,
     price,
@@ -47,6 +47,11 @@ class ProductRepositories {
      values (${name}, ${sku}, ${price}, ${detail},${image},${category})`;
 
     console.log(query);
+  }
+
+  public async getProductById(product_id: string) {
+    const query = await sql`SELECT * FROM products WHERE id = ${product_id}`;
+    return query;
   }
 }
 
