@@ -37,6 +37,19 @@ class OrderRepositories {
     const query = sql`DELETE FROM shopping_cart WHERE user_id = ${user_id} AND product_id = ${product_id}`;
     return query;
   }
+
+  public async deleteMultipeCartItems(
+    itemIds: { product_id: string; user_id: string }[]
+  ) {
+    console.log(itemIds);
+    if (itemIds.length === 0) return;
+    const productIds = itemIds.map((item) => item.product_id);
+    const user_ids = itemIds.map((item) => item.user_id);
+    await sql`
+    DELETE FROM shopping_cart
+    WHERE product_id = ANY(${productIds} & user_id = ANY(${user_ids}))
+  `;
+  }
 }
 
 export default new OrderRepositories();
