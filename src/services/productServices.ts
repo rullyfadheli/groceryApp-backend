@@ -8,9 +8,7 @@ class ProductServices {
     return products;
   }
 
-  public async getProductByCategory(
-    category: string
-  ): Promise<boolean | postgres.RowList<postgres.Row[]>> {
+  public async getProductByCategory(category: string) {
     try {
       const product = await productRepositories.getProductByCategory(category);
       return product;
