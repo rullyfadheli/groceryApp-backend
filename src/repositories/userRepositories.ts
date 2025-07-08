@@ -1,3 +1,4 @@
+import { google } from "googleapis";
 import sql from "../config/database.js";
 
 class UserRepositories {
@@ -16,6 +17,28 @@ class UserRepositories {
     (username, password, email, mobile) 
     values (${username}, ${password},${email},${mobile})
     `;
+    return query;
+  }
+
+  public async OAuthRegister({
+    username,
+    email,
+    google_id,
+  }: {
+    username: string;
+    email: string;
+    google_id: string;
+  }) {
+    const query = await sql`
+    INSERT INTO users (username, email, google_id)
+    VALUES (${username}, ${email}, ${google_id})
+    ON CONFLICT (google_id)
+    DO UPDATE SET 
+      username = EXCLUDED.username,
+      email = EXCLUDED.email
+    RETURNING *;
+  `;
+
     return query;
   }
 

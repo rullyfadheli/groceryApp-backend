@@ -28,6 +28,28 @@ class UserServices {
     }
   }
 
+  public async OAuthRegister({
+    username,
+    email,
+    google_id,
+  }: {
+    username: string;
+    email: string;
+    google_id: string;
+  }) {
+    try {
+      const user = await userRepositories.OAuthRegister({
+        username,
+        email,
+        google_id,
+      });
+      return user;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
+
   public async getUserByEmail(email: string) {
     try {
       return await userRepositories.getUserByEmail(email);
