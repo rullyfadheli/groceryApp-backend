@@ -67,6 +67,22 @@ class OrderServices {
       return false;
     }
   }
+
+  public async deleteMultipleCartItems(
+    items: { product_id: string; order_id: string; user_id: string }[]
+  ): Promise<boolean> {
+    try {
+      const ids = items.map(({ product_id, user_id }) => ({
+        product_id,
+        user_id,
+      }));
+      await orderRepositories.deleteMultipeCartItems(ids);
+      return true;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
 }
 
 export default new OrderServices();

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import productServices from "../services/productServices.js";
 
 //type
-import { type Product } from "../type/productType.js";
+import { type Product } from "../types/productType.js";
 import UploadImage from "./imageUpload.js";
 class ProductControllers {
   public getCategory?: number;
@@ -86,7 +86,7 @@ class ProductControllers {
   public async getBestDealProduct(response: Response): Promise<void | Product> {
     const result = await productServices.getProductBestDeal();
 
-    if (!result || result.length === 0) {
+    if (!result || !Array.isArray(result) || result.length === 0) {
       response.status(401).json([{ message: "Failed to fetch data from DB" }]);
       return;
     }

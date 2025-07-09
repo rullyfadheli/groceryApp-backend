@@ -216,7 +216,6 @@ class UserController {
             id: userData[0].id,
             username: this.username,
             email: this.email,
-            mobile: this.mobile,
           },
           ACCESS_TOKEN_SECRET,
           { expiresIn: "10m" }
@@ -227,7 +226,6 @@ class UserController {
             id: userData[0].id,
             username: this.username,
             email: this.email,
-            mobile: this.mobile,
           },
           REFRESH_TOKEN_SECRET,
           { expiresIn: "2d" }
@@ -319,18 +317,17 @@ class UserController {
         id: string;
         username: string;
         email: string;
-        mobile: number;
       };
 
-      const { id, username, email, mobile } = decoded_token;
+      const { id, username, email } = decoded_token;
 
-      if (!id || !username || !email || !mobile) {
+      if (!id || !username || !email) {
         response.status(401).json([{ message: "Invalid token" }]);
         return;
       }
 
       const newAccessToken: string = jwt.sign(
-        { id, username, email, mobile },
+        { id, username, email },
         ACCESS_TOKEN_SECRET
       );
 
