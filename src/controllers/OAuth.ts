@@ -95,8 +95,6 @@ class OAuthController {
 
     const { data } = await oauth2.userinfo.get();
 
-    console.log(data);
-
     if (!data || !data.email || !data.name) {
       res
         .status(400)
@@ -108,7 +106,7 @@ class OAuthController {
     const username = data.name as string;
     const google_id = data.id as string;
 
-    console.log(data);
+    // console.log(data);
 
     const user = await userServices.OAuthRegister({
       username,
@@ -116,7 +114,7 @@ class OAuthController {
       google_id,
     });
 
-    console.log("user data" + user);
+    console.log(user);
 
     if (!user || !Array.isArray(user) || user.length === 0) {
       res.status(404).json([{ message: "User not found" }]);
@@ -135,12 +133,21 @@ class OAuthController {
       { expiresIn: "2D" }
     );
 
-    res.cookie("FRgrocery", refresh_token, {
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 * 2,
+    const storeTokenToDB: boolean = await userServices.storeRefreshToken({
+      user_id: user[0].id,
+      token: refresh_token,
     });
 
-    res.status(200).json({ access_token });
+    if (!storeTokenToDB) {
+      res
+        .status(400)
+        .json([{ message: "Login failed, please try again later" }]);
+      return;
+    }
+
+    res.redirect(
+      `http://localhost:3000/auth/google/callback?refresh_token=${refresh_token}&access_token=${access_token}`
+    );
     return;
   }
 }

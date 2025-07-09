@@ -21,7 +21,7 @@ class UserController {
     this.password = request.body?.password;
     this.email = request.body?.email;
     this.mobile = request.body?.mobile;
-    this.refresh_token = request.cookies?.FRgrocery;
+    this.refresh_token = request.cookies?.refresh_token;
     this.access_token = request.headers?.authorization;
     this.verify_email_token = request.query?.token as string;
   }
@@ -250,7 +250,7 @@ class UserController {
         return;
       }
 
-      response.cookie("FRgrocery", refresh_token, {
+      response.cookie("refresh_token", refresh_token, {
         maxAge: 1000 * 60 * 60 * 24 * 2,
       });
 
