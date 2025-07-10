@@ -24,24 +24,37 @@ class UserRepositories {
     username,
     email,
     google_id,
+    email_verified,
   }: {
     username: string;
     email: string;
     google_id: string;
+    email_verified: boolean;
   }) {
     const query = await sql`
-    INSERT INTO users (username, email, google_id)
-    VALUES (${username}, ${email}, ${google_id})
-    ON CONFLICT (google_id)
-    DO UPDATE SET 
-      username = EXCLUDED.username,
-      email = EXCLUDED.email
-    RETURNING *;
+  INSERT INTO users (username, email, google_id, email_verified)
+  VALUES (${username}, ${email}, ${google_id}, ${email_verified})
+  ON CONFLICT (email)
+  DO UPDATE SET 
+    username = EXCLUDED.username,
+    email_verified = EXCLUDED.email_verified,
+    google_id = EXCLUDED.google_id
+  RETURNING *;
   `;
 
     return query;
   }
 
+  public async storeRefreshToken(
+    user_id: string,
+    token: string
+  ): Promise<void> {
+    await sql`
+    UPDATE users
+    SET refresh_token = ${token}
+    WHERE id = ${user_id};
+  `;
+  }
   public async getUserByEmail(email: string) {
     const query = await sql`SELECT * FROM users WHERE email = ${email} `;
     return query;

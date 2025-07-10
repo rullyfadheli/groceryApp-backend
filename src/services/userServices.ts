@@ -42,8 +42,25 @@ class UserServices {
         username,
         email,
         google_id,
+        email_verified: true,
       });
       return user;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
+
+  public async storeRefreshToken({
+    user_id,
+    token,
+  }: {
+    user_id: string;
+    token: string;
+  }): Promise<boolean> {
+    try {
+      await userRepositories.storeRefreshToken(user_id, token);
+      return true;
     } catch (err) {
       console.log(err);
       return false;
