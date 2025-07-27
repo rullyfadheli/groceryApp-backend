@@ -2,8 +2,19 @@ import sql from "../config/database.js";
 
 class OrderRepositories {
   public async getShoppingCart(user_id: string) {
-    const query =
-      await sql`SELECT * FROM shopping_cart WHERE user_id = ${user_id}`;
+    const query = await sql`
+    SELECT 
+      sp.product_id,
+      sp.quantity,
+      p.name,
+      p.price,
+      p.image,
+      d.discount_percentage
+    FROM shopping_cart sp
+    LEFT JOIN discount d ON sp.product_id = d.product_id
+    JOIN products p ON sp.product_id = p.id
+    WHERE sp.user_id = ${user_id}
+  `;
     return query;
   }
 

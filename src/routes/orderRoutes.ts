@@ -20,7 +20,7 @@ orderRoutes.post(
   "/add-to-cart",
   verifyToken.verifyUser,
   (req: Request, res: Response) => {
-    console.log(req.user);
+    // console.log(req.body);
     const order = new OrdersController(req);
     order.addToCart(res);
   }

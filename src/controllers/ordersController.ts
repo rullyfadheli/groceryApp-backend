@@ -21,7 +21,7 @@ class OrdersController {
     }
 
     const orderData = await orderServices.getShoppingCart(this.user_id);
-    console.log("orderData", orderData);
+    // console.log("orderData", orderData);
 
     if (!orderData || !Array.isArray(orderData) || orderData.length === 0) {
       response.status(404).json([
@@ -32,7 +32,39 @@ class OrdersController {
       return;
     }
 
-    response.status(200).json(orderData);
+    type OrderItem = {
+      id: string;
+      created_at: string;
+      product_id: string | null;
+      quantity: number;
+      price: number;
+      discount_percentage: number | null;
+      name: string;
+      sku: string;
+      detail: string;
+      image: string;
+      category: string;
+      sold: number;
+      review: string | null;
+      rating: string | null;
+      user_id?: string;
+      final_price?: number;
+    };
+    const calculateFinalPrice = orderData.map((item): OrderItem => {
+      const discount = item.discount_percentage || 0;
+      const finalPrice = item.price - (item.price * discount) / 100;
+
+      return {
+        ...item,
+        final_price: finalPrice,
+      } as OrderItem;
+    });
+
+    const finalResponse = calculateFinalPrice.map(
+      ({ user_id, ...rest }) => rest
+    );
+
+    response.status(200).json(finalResponse);
     return;
   }
 
@@ -46,13 +78,21 @@ class OrdersController {
       return;
     }
 
+    // console.log("product_id", this.product_id);
+
     const defaultQuantity: number = 1;
 
     const productDataFromDB = await productServices.getProductById(
       this.product_id
     );
 
-    if (!productDataFromDB || !Array.isArray(productDataFromDB)) {
+    // console.log(productDataFromDB);
+
+    if (
+      !productDataFromDB ||
+      !Array.isArray(productDataFromDB) ||
+      productDataFromDB.length === 0
+    ) {
       response.status(404).json([{ message: "Product not found" }]);
       return;
     }
@@ -78,18 +118,9 @@ class OrdersController {
       Array.isArray(isItemInCart) &&
       isItemInCart.length > 0
     ) {
-      const updateQuantity: number = isItemInCart[0]?.quantity + 1;
-
-      await orderServices.updateCartItem(
-        this.user_id,
-        this.product_id,
-        updateQuantity
-      );
-
       response.status(201).json([
         {
-          message:
-            "Item is already exist in the cart, the item quantity will be added",
+          message: "Item is already exist in the cart",
         },
       ]);
       return;
