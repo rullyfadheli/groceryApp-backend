@@ -290,6 +290,7 @@ class UserController {
   public async generateUserToken(response: Response): Promise<void> {
     try {
       if (!this.refresh_token) {
+        // console.log(this.refresh_token);
         response
           .status(401)
           .json([{ message: "Session expired, please login" }]);
@@ -322,20 +323,23 @@ class UserController {
       const { id, username, email } = decoded_token;
 
       if (!id || !username || !email) {
-        response.status(401).json([{ message: "Invalid token" }]);
+        response.redirect("localhost:3000/login");
         return;
       }
 
       const newAccessToken: string = jwt.sign(
         { id, username, email },
-        ACCESS_TOKEN_SECRET
+        ACCESS_TOKEN_SECRET,
+        {
+          expiresIn: "10m",
+        }
       );
 
       response.status(200).json([{ access_token: newAccessToken }]);
       return;
     } catch (error) {
       console.log(error);
-      response.status(401).json([{ message: "Invalid token" }]);
+      response.redirect("localhost:3000/login");
     }
   }
 

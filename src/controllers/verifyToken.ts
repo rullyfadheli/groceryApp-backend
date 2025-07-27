@@ -25,7 +25,7 @@ class VerifyToken {
             res.status(403).json({ message: "Access denied" });
             return;
           }
-
+          // console.log(decoded);
           req.user = decoded;
           next();
         }
