@@ -8,8 +8,8 @@ class ProductRepositories {
 
   public async getProductByCategory(category: string) {
     // console.log(category);
-    const query =
-      await sql`SELECT * from products WHERE category = ${category}`;
+    const query = await sql`SELECT * from products p
+      JOIN discount d ON p.id = d.product_id WHERE category = ${category}`;
     return query;
   }
 
@@ -50,7 +50,20 @@ class ProductRepositories {
   }
 
   public async getProductById(product_id: string) {
-    const query = await sql`SELECT * FROM products WHERE id = ${product_id}`;
+    const query = await sql`
+    SELECT * 
+    FROM products p 
+    JOIN discount d ON p.id = d.product_id 
+    WHERE p.id = ${product_id}
+  `;
+    return query;
+  }
+
+  async getPopularProducts() {
+    const query = await sql`
+      SELECT * 
+      FROM products p JOIN discount d  ON p.id = d.product_id
+      ORDER BY sold DESC LIMIT 5`;
     return query;
   }
 }

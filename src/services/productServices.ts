@@ -8,9 +8,12 @@ class ProductServices {
     return products;
   }
 
-  public async getProductByCategory(category: string) {
+  public async getProductByCategory(
+    category: string
+  ): Promise<boolean | postgres.RowList<postgres.Row[]>> {
     try {
-      const product = await productRepositories.getProductByCategory(category);
+      const product: postgres.RowList<postgres.Row[]> =
+        await productRepositories.getProductByCategory(category);
       return product;
     } catch (err) {
       return false;
@@ -21,7 +24,8 @@ class ProductServices {
     boolean | postgres.RowList<postgres.Row[]>
   > {
     try {
-      const product = await productRepositories.getBestDeal();
+      const product: postgres.RowList<postgres.Row[]> =
+        await productRepositories.getBestDeal();
       return product;
     } catch (err) {
       return false;
@@ -51,6 +55,20 @@ class ProductServices {
       const product = await productRepositories.getProductById(product_id);
       return product;
     } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
+
+  public async getPopularProducts(): Promise<
+    boolean | postgres.RowList<postgres.Row[]>
+  > {
+    try {
+      const product: postgres.RowList<postgres.Row[]> =
+        await productRepositories.getPopularProducts();
+      return product;
+    } catch (err) {
+      console.log(err);
       return false;
     }
   }
