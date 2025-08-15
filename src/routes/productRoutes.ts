@@ -18,7 +18,7 @@ productRouter.get(
   "/product-by-category",
   (request: Request, response: Response) => {
     const product = new ProductController(request);
-    product.getProductByCategory(response);
+    product.getProductByCategory(request, response);
   }
 );
 
@@ -33,6 +33,19 @@ productRouter.post(
   (request: Request, response: Response) => {
     const product = new ProductController(request);
     product.insertNewProduct(request, response);
+  }
+);
+
+productRouter.get("/product-by-id", (request: Request, response: Response) => {
+  const product = new ProductController(request);
+  product.getProductById(response);
+});
+
+productRouter.get(
+  "/popular-products",
+  (request: Request, response: Response) => {
+    const product = new ProductController(request);
+    product.getPoularProducts(response);
   }
 );
 
