@@ -4,16 +4,17 @@ class OrderRepositories {
   public async getShoppingCart(user_id: string) {
     const query = await sql`
     SELECT 
-      sp.product_id,
-      sp.quantity,
+      sc.product_id,
+      sc.quantity,
+      sc.user_id,
       p.name,
       p.price,
       p.image,
       d.discount_percentage
-    FROM shopping_cart sp
-    LEFT JOIN discount d ON sp.product_id = d.product_id
-    JOIN products p ON sp.product_id = p.id
-    WHERE sp.user_id = ${user_id}
+    FROM shopping_cart sc
+    LEFT JOIN discount d ON sc.product_id = d.product_id
+    JOIN products p ON sc.product_id = p.id
+    WHERE sc.user_id = ${user_id}
   `;
     return query;
   }
@@ -49,17 +50,39 @@ class OrderRepositories {
     return query;
   }
 
-  public async deleteMultipeCartItems(
-    itemIds: { product_id: string; user_id: string }[]
-  ) {
-    console.log(itemIds);
-    if (itemIds.length === 0) return;
-    const productIds = itemIds.map((item) => item.product_id);
-    const user_ids = itemIds.map((item) => item.user_id);
+  public async deleteMultipeCartItems(userId: string, productIds: string[]) {
+    // Do nothing if there are no product IDs to delete
+    if (!userId || productIds.length === 0) {
+      return;
+    }
+
+    // The sql(productIds) helper correctly formats the array for the IN clause
     await sql`
     DELETE FROM shopping_cart
-    WHERE product_id = ANY(${productIds} & user_id = ANY(${user_ids}))
+    WHERE user_id = ${userId} AND product_id IN ${sql(productIds)}
   `;
+  }
+
+  public async getPaymentStatus(order_id: string, user_id: string) {
+    const query = await sql`
+      SELECT payment_status
+      FROM orders
+      WHERE order_id = ${order_id} AND user_id = ${user_id}
+    `;
+    return query;
+  }
+
+  public async updatePaymentStatus(
+    order_id: string,
+    status: string,
+    user_id: string
+  ) {
+    const query = sql`
+      UPDATE orders
+      SET payment_status = ${status}
+      WHERE order_id = ${order_id} AND user_id = ${user_id}
+    `;
+    return query;
   }
 }
 

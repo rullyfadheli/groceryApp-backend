@@ -69,14 +69,34 @@ class OrderServices {
   }
 
   public async deleteMultipleCartItems(
-    items: { product_id: string; order_id: string; user_id: string }[]
+    user_id: string,
+    items: string[]
   ): Promise<boolean> {
     try {
-      const ids = items.map(({ product_id, user_id }) => ({
-        product_id,
-        user_id,
-      }));
-      await orderRepositories.deleteMultipeCartItems(ids);
+      await orderRepositories.deleteMultipeCartItems(user_id, items);
+      return true;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
+
+  public async getPaymentStatus(order_id: string, user_id: string) {
+    try {
+      return await orderRepositories.getPaymentStatus(order_id, user_id);
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
+
+  public async updatePaymentStatus(
+    order_id: string,
+    status: string,
+    user_id: string
+  ): Promise<boolean> {
+    try {
+      await orderRepositories.updatePaymentStatus(order_id, status, user_id);
       return true;
     } catch (err) {
       console.log(err);
