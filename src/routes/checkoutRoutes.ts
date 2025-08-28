@@ -23,4 +23,12 @@ checkoutRouter.post(
   }
 );
 
+checkoutRouter.get(
+  "/get-order-details",
+  verifyToken.verifyUser,
+  (req: Request, res: Response) => {
+    new CheckoutController(req).getOrderDetails(res);
+  }
+);
+
 export default checkoutRouter;

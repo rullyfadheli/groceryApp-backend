@@ -1,4 +1,5 @@
 import checkoutRepositories from "../repositories/checkoutRepositories.js";
+import postgres from "postgres";
 
 class checkoutServices {
   public async createOrder(
@@ -31,6 +32,22 @@ class checkoutServices {
       return true;
     } catch (error) {
       console.error("Error inserting order items:", error);
+      return false;
+    }
+  }
+
+  public async getOrderDetails(
+    order_id: string,
+    user_id: string
+  ): Promise<postgres.RowList<postgres.Row[]> | false> {
+    try {
+      const data = await checkoutRepositories.getOrderDetails(
+        order_id,
+        user_id
+      );
+      return data;
+    } catch (error) {
+      console.log(error);
       return false;
     }
   }
