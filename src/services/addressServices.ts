@@ -15,6 +15,28 @@ class AddressServices {
       return false;
     }
   }
+
+  public async addNewAddress(
+    user_id: string,
+    address: string,
+    label: string,
+    lat: number,
+    lng: number
+  ): Promise<boolean> {
+    try {
+      await AddressRepositories.instance.addNewAddress(
+        user_id,
+        address,
+        label,
+        lat,
+        lng
+      );
+      return true;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
 }
 
 export default AddressServices;

@@ -9,7 +9,15 @@ addressRouter.get(
   "/address",
   verifyToken.verifyUser,
   (req: Request, res: Response) => {
-    AddressController.instance.getAddressByUserId(req, res);
+    new AddressController(req).getAddressByUserId(req, res);
+  }
+);
+
+addressRouter.post(
+  "/add-address",
+  verifyToken.verifyUser,
+  (req: Request, res: Response) => {
+    new AddressController(req).addNewAddress(res);
   }
 );
 
