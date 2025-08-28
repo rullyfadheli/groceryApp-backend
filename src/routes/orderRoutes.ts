@@ -53,4 +53,13 @@ orderRoutes.delete(
   }
 );
 
+// orderRoutes.get(
+//   "/cart-total-price",
+//   verifyToken.verifyUser,
+//   (req: Request, res: Response) => {
+//     const order = new OrdersController(req);
+//     order.getTotalPrice(res);
+//   }
+// );
+
 export default orderRoutes;

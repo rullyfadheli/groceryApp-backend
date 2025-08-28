@@ -12,4 +12,12 @@ wishlistRouter.get(
   }
 );
 
+wishlistRouter.post(
+  "/add-to-wishlist",
+  verifyToken.verifyUser,
+  (req: Request, res: Response) => {
+    new WishlistController(req).addToWishlist(res);
+  }
+);
+
 export default wishlistRouter;

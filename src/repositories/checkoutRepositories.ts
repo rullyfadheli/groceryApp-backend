@@ -34,6 +34,29 @@ class CheckoutRepository {
     `;
     console.log("Order captured:", query);
   }
+
+  public async getOrderDetails(order_id: string, user_id: string) {
+    const query = await sql`
+    SELECT 
+      o.amount,
+      o.created_at,
+      sc.quantity,
+      p.name,
+      p.price,
+      d.discount_percentage
+    FROM 
+      orders o
+    JOIN 
+      shopping_cart sc ON sc.user_id = o.user_id
+    JOIN 
+      products p ON sc.product_id = p.id
+    LEFT JOIN 
+      discount d ON d.product_id = p.id
+    WHERE 
+      o.order_id = ${order_id} AND o.user_id = ${user_id}
+  `;
+    return query;
+  }
 }
 
 export default new CheckoutRepository();
