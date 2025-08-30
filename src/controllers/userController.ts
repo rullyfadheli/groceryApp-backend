@@ -4,8 +4,14 @@ import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 dotenv.config();
 
+// Types
+import type { UserProfileData } from "../types/UserType.js";
+import postgres from "postgres";
+
+// Services
 import userServices from "../services/userServices.js";
 import SendMail from "./sendMail.js";
+import { get } from "http";
 
 class UserController {
   private username?: string;
@@ -13,8 +19,9 @@ class UserController {
   private email?: string;
   private mobile?: number;
   private refresh_token?: string;
-  private access_token?: string;
+
   private verify_email_token?: string;
+  private auth_email?: string;
 
   constructor(request: Request) {
     this.username = request.body?.username;
@@ -22,8 +29,8 @@ class UserController {
     this.email = request.body?.email;
     this.mobile = request.body?.mobile;
     this.refresh_token = request.cookies?.refresh_token;
-    this.access_token = request.headers?.authorization;
     this.verify_email_token = request.query?.token as string;
+    this.auth_email = request?.user?.email;
   }
 
   // Register
@@ -345,39 +352,31 @@ class UserController {
 
   public async getUserProfile(response: Response): Promise<void> {
     try {
-      if (!this.access_token) {
+      if (!this.auth_email) {
         response.status(401).json([{ message: "Invalid token, please login" }]);
         return;
       }
 
-      const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET as string;
-
-      const split_access_token = this.access_token.split(" ")[1];
-      console.log(split_access_token);
-      if (!ACCESS_TOKEN_SECRET) {
-        response.status(400).json([{ message: "Server misconfiguration" }]);
-        return;
-      }
-
-      const decoded_token = jwt.verify(
-        split_access_token,
-        ACCESS_TOKEN_SECRET
-      ) as {
-        username: string;
-        email: string;
-        mobile: number;
-      };
-
-      const { email } = decoded_token;
-
-      const getDataFromDB = await userServices.getUserByEmail(email);
+      const getDataFromDB: false | postgres.RowList<postgres.Row[]> =
+        await userServices.getUserByEmail(this.auth_email);
+      // console.log(getDataFromDB);
 
       if (!getDataFromDB) {
         response.status(400).json([{ message: "Error, user not found" }]);
         return;
       }
 
-      response.status(200).json(getDataFromDB);
+      const address: String[] = getDataFromDB.map(({ address }) => address);
+      // console.log(address);
+
+      const userProfile = getDataFromDB.map(({ address, ...rest }) => ({
+        ...rest,
+      }));
+
+      const finalData = [userProfile[0], address] as UserProfileData;
+      // console.log(finalData);
+
+      response.status(200).json(finalData as UserProfileData);
       return;
     } catch (err) {
       console.log(err);

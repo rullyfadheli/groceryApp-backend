@@ -56,7 +56,19 @@ class UserRepositories {
   `;
   }
   public async getUserByEmail(email: string) {
-    const query = await sql`SELECT * FROM users WHERE email = ${email} `;
+    const query = await sql`
+      SELECT 
+      u.id, 
+      u.username, 
+      u.email, 
+      u.profile_picture, 
+      u.mobile, 
+      u.created_at,
+      addr.address 
+      FROM users u 
+      LEFT JOIN address addr 
+      ON u.id = addr.user_id 
+      WHERE email = ${email} `;
     return query;
   }
 
