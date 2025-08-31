@@ -11,15 +11,14 @@ import postgres from "postgres";
 // Services
 import userServices from "../services/userServices.js";
 import SendMail from "./sendMail.js";
-import { get } from "http";
 
 class UserController {
   private username?: string;
   private password?: string;
   private email?: string;
-  private mobile?: number;
+  private mobile?: string;
   private refresh_token?: string;
-
+  private user_id?: string;
   private verify_email_token?: string;
   private auth_email?: string;
 
@@ -31,6 +30,7 @@ class UserController {
     this.refresh_token = request.cookies?.refresh_token;
     this.verify_email_token = request.query?.token as string;
     this.auth_email = request?.user?.email;
+    this.user_id = request?.user?.id;
   }
 
   // Register
@@ -381,6 +381,43 @@ class UserController {
     } catch (err) {
       console.log(err);
       response.status(401).json([{ message: "Invalid token" }]);
+    }
+  }
+
+  public async editUserProfile(response: Response): Promise<void> {
+    if (!this.user_id) {
+      response.status(400).json([{ message: "Server error, user not found" }]);
+      return;
+    }
+
+    if (!this.username || !this.email || !this.mobile) {
+      response.status(400).json([{ message: "Please fill required fields" }]);
+      return;
+    }
+
+    try {
+      const data: boolean = await userServices.editUserProfile(
+        this.user_id,
+        this.username,
+        this.email,
+        String(this.mobile)
+      );
+
+      if (!data) {
+        response
+          .status(400)
+          .json([{ message: "Server error, failed to update profile" }]);
+        return;
+      }
+
+      response.status(200).json([{ message: "Profile updated successfully" }]);
+      return;
+    } catch (error) {
+      console.log(error);
+      response
+        .status(400)
+        .json([{ message: "Server error, failed to update profile" }]);
+      return;
     }
   }
 }

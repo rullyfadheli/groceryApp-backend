@@ -10,7 +10,7 @@ class UserServices {
     username: string;
     password: string;
     email: string;
-    mobile: number;
+    mobile: string;
   }) {
     try {
       await userRepositories.register({
@@ -108,6 +108,21 @@ class UserServices {
   public async verifyEmail(verify: boolean, email: string) {
     try {
       await userRepositories.updateEmailverification(verify, email);
+      return true;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
+
+  public async editUserProfile(
+    id: string,
+    username: string,
+    email: string,
+    mobile: string
+  ): Promise<boolean> {
+    try {
+      await userRepositories.editUserProfile(id, username, mobile, email);
       return true;
     } catch (err) {
       console.log(err);
