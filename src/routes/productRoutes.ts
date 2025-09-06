@@ -49,4 +49,8 @@ productRouter.get(
   }
 );
 
+productRouter.get("/initial-products", (req: Request, res: Response) => {
+  new ProductController(req).get10products(res);
+});
+
 export default productRouter;

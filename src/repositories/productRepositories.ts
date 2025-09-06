@@ -59,11 +59,37 @@ class ProductRepositories {
     return query;
   }
 
-  async getPopularProducts() {
+  public async getPopularProducts() {
     const query = await sql`
       SELECT * 
       FROM products p JOIN discount d  ON p.id = d.product_id
       ORDER BY sold DESC LIMIT 5`;
+    return query;
+  }
+
+  public async get10Product() {
+    const query = await sql`
+    SELECT 
+    p.*,
+    d.discount_percentage 
+    FROM products p JOIN discount d
+    ON p.id = d.product_id
+    ORDER BY created_at DESC 
+    LIMIT 10
+  `;
+    return query;
+  }
+
+  public async getProductByDate(date: string) {
+    const query = await sql`
+    SELECT 
+    p.*,
+    d.discouunt_percentage
+    FROM products p
+    JOIN discount d ON p.id = d.product_id
+    WHERE (created_at > ${date})
+    ORDER BY created_at DESC
+  `;
     return query;
   }
 }

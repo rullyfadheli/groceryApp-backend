@@ -72,6 +72,32 @@ class ProductServices {
       return false;
     }
   }
+
+  public async getProductByDate(
+    date: string
+  ): Promise<postgres.RowList<postgres.Row[]> | false> {
+    try {
+      const product: postgres.RowList<postgres.Row[]> =
+        await productRepositories.getProductByDate(date);
+      return product;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
+
+  public async get10Products(): Promise<
+    postgres.RowList<postgres.Row[]> | false
+  > {
+    try {
+      const product: postgres.RowList<postgres.Row[]> =
+        await productRepositories.get10Product();
+      return product;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
 }
 
 export default new ProductServices();
