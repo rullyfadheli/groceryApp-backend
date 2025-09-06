@@ -204,7 +204,7 @@ class UserController {
         return;
       }
 
-      const verifyPassword = await bcrypt.compare(
+      const verifyPassword: boolean = await bcrypt.compare(
         this.password,
         userData[0].password
       );
@@ -243,7 +243,7 @@ class UserController {
         return;
       }
 
-      const storeTokenToDB = await userServices.loginUser(
+      const storeTokenToDB: boolean = await userServices.loginUser(
         this.email,
         refresh_token
       );
