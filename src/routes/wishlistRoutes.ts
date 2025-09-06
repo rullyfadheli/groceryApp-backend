@@ -20,4 +20,12 @@ wishlistRouter.post(
   }
 );
 
+wishlistRouter.delete(
+  "/remove-from-wishlist",
+  verifyToken.verifyUser,
+  (req: Request, res: Response) => {
+    new WishlistController(req).removeFromWishlist(res);
+  }
+);
+
 export default wishlistRouter;
