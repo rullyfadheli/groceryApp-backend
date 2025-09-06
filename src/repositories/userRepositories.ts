@@ -60,6 +60,7 @@ class UserRepositories {
       SELECT 
       u.id, 
       u.username, 
+      u.password,
       u.email, 
       u.profile_picture, 
       u.mobile, 
