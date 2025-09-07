@@ -42,4 +42,12 @@ userRouter.get(
   }
 );
 
+userRouter.put(
+  "/edit-profile",
+  verifyToken.verifyUser,
+  (request: Request, response: Response) => {
+    const user = new UserController(request).editUserProfile(response);
+  }
+);
+
 export default userRouter;

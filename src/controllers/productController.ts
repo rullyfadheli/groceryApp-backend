@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import productServices from "../services/productServices.js";
 import reviewServices from "../services/reviewServices.js";
 
@@ -7,14 +7,15 @@ import type postgres from "postgres";
 //type
 import { type Product } from "../types/productType.js";
 import UploadImage from "./imageUpload.js";
-import { parse } from "path";
 class ProductControllers {
   public getCategory?: number | string;
   private productID?: string;
+  private productDate?: string;
 
   constructor(request: Request) {
     this.getCategory = Number(request.query.category) as number;
     this.productID = request.query?.productID as string;
+    this.productDate = request.query?.productDate as string;
   }
 
   public async getAllProduct(response: Response): Promise<void | Product> {
@@ -290,6 +291,45 @@ class ProductControllers {
       response.status(400).json([{ message: "Failed to fetch data from DB" }]);
       return;
     }
+  }
+
+  public async getProductByDate(response: Response): Promise<Response> {
+    if (!this.productDate) {
+      return response
+        .status(400)
+        .json([{ message: "Product date was not provided" }]);
+    }
+
+    const data: false | postgres.RowList<postgres.Row[]> =
+      await productServices.getProductByDate(this.productDate);
+
+    if (!data) {
+      return response
+        .status(404)
+        .json([{ message: "Oops.. Server error, no product found" }]);
+    }
+
+    return response.status(200).json(data);
+  }
+
+  public async get10products(response: Response) {
+    const data: false | postgres.RowList<postgres.Row[]> =
+      await productServices.get10Products();
+
+    if (!data) {
+      return response
+        .status(404)
+        .json([{ message: "Oops.. Server error, no product found" }]);
+    }
+
+    const finalData = data.map((items) => {
+      const discountvalue: number =
+        (items.price * items.discount_percentage) / 100;
+
+      return { ...items, final_price: items.price - discountvalue };
+    });
+
+    return response.status(200).json(finalData);
   }
 }
 

@@ -11,7 +11,7 @@ class UserRepositories {
     username: string;
     password: string;
     email: string;
-    mobile: number;
+    mobile: string;
   }) {
     const query = await sql`INSERT INTO users
     (username, password, email, mobile) 
@@ -56,7 +56,20 @@ class UserRepositories {
   `;
   }
   public async getUserByEmail(email: string) {
-    const query = await sql`SELECT * FROM users WHERE email = ${email} `;
+    const query = await sql`
+      SELECT 
+      u.id, 
+      u.username, 
+      u.password,
+      u.email, 
+      u.profile_picture, 
+      u.mobile, 
+      u.created_at,
+      addr.address 
+      FROM users u 
+      LEFT JOIN address addr 
+      ON u.id = addr.user_id 
+      WHERE email = ${email} `;
     return query;
   }
 
@@ -80,6 +93,22 @@ class UserRepositories {
   public async updateEmailverification(verify: boolean, email: string) {
     const query =
       await sql`UPDATE users SET email_verified = ${verify} WHERE email = ${email}`;
+    return query;
+  }
+
+  public async editUserProfile(
+    id: string,
+    username: string,
+    mobile: string,
+    email: string
+  ) {
+    const query = await sql`
+  UPDATE users
+  SET username = ${username},
+      mobile = ${mobile},
+      email = ${email}
+  WHERE id = ${id}
+`;
     return query;
   }
 }
