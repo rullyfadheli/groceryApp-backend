@@ -1,6 +1,10 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import productServices from "../services/productServices.js";
 import reviewServices from "../services/reviewServices.js";
+import searchService from "../services/searchService.js";
+
+// Test
+import sync from "../models/sync.js";
 
 import type postgres from "postgres";
 
@@ -10,12 +14,14 @@ import UploadImage from "./imageUpload.js";
 class ProductControllers {
   public getCategory?: number | string;
   private productID?: string;
-  private productDate?: string;
+  private serial?: string;
+  private keyword?: string;
 
   constructor(request: Request) {
     this.getCategory = Number(request.query.category) as number;
     this.productID = request.query?.productID as string;
-    this.productDate = request.query?.productDate as string;
+    this.serial = request.query?.serial as string;
+    this.keyword = request.query?.keyword as string;
   }
 
   public async getAllProduct(response: Response): Promise<void | Product> {
@@ -37,7 +43,6 @@ class ProductControllers {
   ): Promise<void | Product> {
     const stringCategory: string = request.query.category as string;
     const numberCategory = this.getCategory;
-    // console.log(category);
 
     if (!numberCategory && !stringCategory) {
       response
@@ -46,63 +51,71 @@ class ProductControllers {
       return;
     }
 
-    let parsedCategory: string = "";
+    try {
+      let parsedCategory: string = "";
 
-    if (numberCategory) {
-      switch (numberCategory) {
-        case 1:
-          parsedCategory = "vegetables & Fruits";
-          break;
-        case 2:
-          parsedCategory = "Dairy & Breakfast";
-          break;
-        case 3:
-          parsedCategory = "Cold Drinks & Juices";
-          break;
-        case 4:
-          parsedCategory = "Instant & Frozen Food";
-          break;
-        case 5:
-          parsedCategory = "Tea & Coffee";
-          break;
-        case 6:
-          parsedCategory = "Rice";
-          break;
-        case 7:
-          parsedCategory = "Oil";
-          break;
-        case 8:
-          parsedCategory = "Chicken, Meat & Fish";
-          break;
-        default:
-          response.status(400).json({
-            message: "Invalid category code",
-          });
-          return;
+      if (numberCategory) {
+        switch (numberCategory) {
+          case 1:
+            parsedCategory = "Vegetables & Fruits";
+            break;
+          case 2:
+            parsedCategory = "Dairy & Breakfast";
+            break;
+          case 3:
+            parsedCategory = "Cold Drinks & Juices";
+            break;
+          case 4:
+            parsedCategory = "Instant & Frozen Food";
+            break;
+          case 5:
+            parsedCategory = "Tea & Coffee";
+            break;
+          case 6:
+            parsedCategory = "Atta, Rice & Dal";
+            break;
+          case 7:
+            parsedCategory = "Oil";
+            break;
+          case 8:
+            parsedCategory = "Chicken, Meat & Fish";
+            break;
+          default:
+            response.status(400).json({
+              message: "Invalid category code",
+            });
+            return;
+        }
       }
-    }
 
-    parsedCategory = stringCategory as string;
+      // parsedCategory = stringCategory as string;
 
-    // console.log(parsedCategory);
-    const product = await productServices.getProductByCategory(parsedCategory);
-    // console.log(product);
+      // console.log(parsedCategory);
+      const product = await productServices.getProductByCategory(
+        parsedCategory
+      );
+      console.log(product);
 
-    if (!product || !Array.isArray(product) || product.length === 0) {
-      response
-        .status(400)
-        .json([{ message: "Failed to fetch the data from DB" }]);
+      if (!product || !Array.isArray(product) || product.length === 0) {
+        response
+          .status(400)
+          .json([{ message: "Failed to fetch the data from DB" }]);
+        return;
+      }
+
+      const responseData = product.map((items) => ({
+        ...items,
+        final_price:
+          items.price - (items.price * items.discount_percentage) / 100,
+      }));
+
+      response.status(200).json(responseData);
+      return;
+    } catch (err) {
+      console.log(err);
+      response.status(500).json([{ message: "Failed to fetch data from DB" }]);
       return;
     }
-
-    const responseData = product.map((items) => ({
-      ...items,
-      final_price:
-        items.price - (items.price * items.discount_percentage) / 100,
-    }));
-
-    response.status(200).json([responseData]);
-    return;
   }
 
   public async getBestDealProduct(response: Response): Promise<void | Product> {
@@ -220,6 +233,8 @@ class ProductControllers {
       return;
     }
 
+    console.log(this.productID);
+
     const result = await productServices.getProductById(
       this.productID as string
     );
@@ -238,7 +253,7 @@ class ProductControllers {
     let ratingSum: number = 0;
 
     const reviewData = await reviewServices.getUserReviews(
-      result[0].product_id as string
+      result[0].id as string
     );
 
     if (!reviewData || !Array.isArray(reviewData)) {
@@ -293,15 +308,17 @@ class ProductControllers {
     }
   }
 
-  public async getProductByDate(response: Response): Promise<Response> {
-    if (!this.productDate) {
+  public async getProductBySerial(response: Response): Promise<Response> {
+    if (!this.serial) {
       return response
         .status(400)
         .json([{ message: "Product date was not provided" }]);
     }
 
+    console.log(this.serial);
+
     const data: false | postgres.RowList<postgres.Row[]> =
-      await productServices.getProductByDate(this.productDate);
+      await productServices.getProductBySerial(Number(this.serial));
 
     if (!data) {
       return response
@@ -309,12 +326,21 @@ class ProductControllers {
         .json([{ message: "Oops.. Server error, no product found" }]);
     }
 
-    return response.status(200).json(data);
+    console.log(data);
+
+    const finalData = data.map((items) => {
+      const discountvalue: number =
+        (items.price * items.discount_percentage) / 100;
+
+      return { ...items, final_price: items.price - discountvalue };
+    });
+
+    return response.status(200).json(finalData);
   }
 
-  public async get10products(response: Response) {
+  public async getInitialproducts(response: Response) {
     const data: false | postgres.RowList<postgres.Row[]> =
-      await productServices.get10Products();
+      await productServices.getInitialProducts();
 
     if (!data) {
       return response
@@ -330,6 +356,40 @@ class ProductControllers {
     });
 
     return response.status(200).json(finalData);
+  }
+
+  public async search(res: Response): Promise<Response> {
+    try {
+      if (!this.keyword) {
+        return res
+          .status(400)
+          .json([{ message: "Search keyword is not provided" }]);
+      }
+      const results: (Record<string, any> | undefined)[] =
+        await searchService.searchProducts(this.keyword);
+
+      if (!results || !Array.isArray(results) || results.length === 0) {
+        return res.status(404).json([{ message: "Product is not found" }]);
+      }
+
+      return res.status(200).json(results);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Search failed" });
+    }
+  }
+
+  public async sync(res: Response) {
+    try {
+      const result = sync();
+      res.status(200).json(result);
+      return;
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(500)
+        .json([{ message: "Failed to sync data to OpenSearch" }]);
+    }
   }
 }
 

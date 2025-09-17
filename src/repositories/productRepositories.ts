@@ -2,20 +2,30 @@ import sql from "../config/database.js";
 
 class ProductRepositories {
   public async getAllProduct() {
-    const query = await sql`SELECT * FROM products`;
+    const query = await sql`SELECT 
+    p.*,
+    d.discount_percentage
+    FROM products p
+    LEFT JOIN discount d ON p.id = d.product_id`;
     return query;
   }
 
   public async getProductByCategory(category: string) {
     // console.log(category);
-    const query = await sql`SELECT * from products p
-      JOIN discount d ON p.id = d.product_id WHERE category = ${category}`;
+    const query = await sql`
+    SELECT 
+    p.*,
+    d.discount_percentage
+     from products p
+    LEFT JOIN discount d ON p.id = d.product_id 
+    WHERE category = ${category}`;
     return query;
   }
 
   public async getBestDeal() {
     const query = await sql`
-    SELECT * 
+    SELECT p.*,
+    d.discount_percentage 
     FROM products p 
     JOIN discount d ON d.product_id = p.id 
     ORDER BY discount_percentage DESC 
@@ -50,10 +60,16 @@ class ProductRepositories {
   }
 
   public async getProductById(product_id: string) {
+    console.log(product_id);
     const query = await sql`
-    SELECT * 
+    SELECT
+    p.*,
+    d.discount_percentage,
+    r.comment,
+    r.rating 
     FROM products p 
-    JOIN discount d ON p.id = d.product_id 
+    LEFT JOIN discount d ON p.id = d.product_id
+    LEFT JOIN  user_reviews r ON p.id = r.product_id
     WHERE p.id = ${product_id}
   `;
     return query;
@@ -61,36 +77,54 @@ class ProductRepositories {
 
   public async getPopularProducts() {
     const query = await sql`
-      SELECT * 
-      FROM products p JOIN discount d  ON p.id = d.product_id
+    SELECT 
+      p.id AS product_id,
+      p.name,
+      p.price,
+      p.detail,
+      p.image,
+      p.category,
+      p.stock,
+      p.sold,
+      d.discount_percentage 
+    FROM products p 
+    LEFT JOIN discount d ON p.id = d.product_id
       ORDER BY sold DESC LIMIT 5`;
     return query;
   }
 
-  public async get10Product() {
+  public async getInitialProduct() {
     const query = await sql`
-    SELECT 
-    p.*,
-    d.discount_percentage 
-    FROM products p JOIN discount d
-    ON p.id = d.product_id
-    ORDER BY created_at DESC 
-    LIMIT 10
+    SELECT
+      p.id, 
+      p.*,
+      d.discount_percentage 
+    FROM products p 
+    LEFT JOIN discount d ON p.id = d.product_id
+    ORDER BY p.serial_id ASC 
+    LIMIT 15
   `;
     return query;
   }
 
-  public async getProductByDate(date: string) {
+  public async getProductBySerial(serial: number) {
     const query = await sql`
     SELECT 
     p.*,
-    d.discouunt_percentage
+    d.discount_percentage,
+    d.product_id
     FROM products p
-    JOIN discount d ON p.id = d.product_id
-    WHERE (created_at > ${date})
-    ORDER BY created_at DESC
+    LEFT JOIN discount d ON p.id = d.product_id
+    WHERE (p.serial_id > ${serial})
+    ORDER BY p.serial_id ASC
   `;
     return query;
+  }
+
+  public async deleteProduct(product_id: string): Promise<string> {
+    const query = await sql`
+    DELETE FROM products WHERE id = ${product_id}`;
+    return query[0].id;
   }
 }
 

@@ -50,7 +50,18 @@ productRouter.get(
 );
 
 productRouter.get("/initial-products", (req: Request, res: Response) => {
-  new ProductController(req).get10products(res);
+  new ProductController(req).getInitialproducts(res);
 });
 
+productRouter.get("/more-products", (req: Request, res: Response) => {
+  new ProductController(req).getProductBySerial(res);
+});
+
+productRouter.get("/search-product", (request: Request, response: Response) => {
+  new ProductController(request).search(response);
+});
+
+productRouter.get("/sync", (req: Request, res: Response) => {
+  new ProductController(req).sync(res);
+});
 export default productRouter;

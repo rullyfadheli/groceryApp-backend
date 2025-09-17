@@ -30,6 +30,7 @@ app.use(
     allowedHeaders: ["authorization", "Content-Type"],
   })
 );
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET as string,
