@@ -196,7 +196,7 @@ class UserController {
       }
 
       const userData = await userServices.getUserByEmail(this.email as string);
-
+      // console.log(userData);
       if (!userData || !userData[0]) {
         response
           .status(404)
