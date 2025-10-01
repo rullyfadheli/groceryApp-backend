@@ -1,0 +1,17 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package.json dan package-lock.json
+COPY package*.json ./
+
+# Install semua dependencies termasuk devDependencies
+RUN npm install --include=dev
+
+# Copy semua source code (agar container bisa jalan tanpa volume mount)
+COPY . .
+
+EXPOSE 3001
+
+# Jalankan nodemon via npm script
+CMD ["npm", "run", "dev"]

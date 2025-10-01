@@ -1,4 +1,8 @@
 import productRepositories from "../repositories/productRepositories.js";
+import searchRepositories from "../repositories/search.repositories.js";
+
+// Types
+import type { ProductData } from "../types/productType.js";
 import type postgres from "postgres";
 
 class ProductServices {
@@ -73,12 +77,12 @@ class ProductServices {
     }
   }
 
-  public async getProductByDate(
-    date: string
+  public async getProductBySerial(
+    serial: number
   ): Promise<postgres.RowList<postgres.Row[]> | false> {
     try {
       const product: postgres.RowList<postgres.Row[]> =
-        await productRepositories.getProductByDate(date);
+        await productRepositories.getProductBySerial(serial);
       return product;
     } catch (err) {
       console.log(err);
@@ -86,17 +90,63 @@ class ProductServices {
     }
   }
 
-  public async get10Products(): Promise<
+  public async getInitialProducts(): Promise<
     postgres.RowList<postgres.Row[]> | false
   > {
     try {
       const product: postgres.RowList<postgres.Row[]> =
-        await productRepositories.get10Product();
+        await productRepositories.getInitialProduct();
       return product;
     } catch (err) {
       console.log(err);
       return false;
     }
+  }
+
+  async createProduct(productData: {
+    name: string;
+    sku: string;
+    price: number;
+    detail: string;
+    image: string;
+    category: string;
+  }): Promise<boolean | postgres.RowList<postgres.Row[]>> {
+    if (productData.price <= 0) {
+      throw new Error("Price must be positive");
+    }
+
+    // 1. Insert into Postgre
+    const newProduct = await this.insertNewProduct(productData);
+
+    // 2. Index into OpenSearch
+    try {
+      if (newProduct) {
+        await searchRepositories.indexProduct(
+          newProduct as unknown as ProductData
+        );
+      }
+    } catch (error) {
+      console.error("Failed to index product in OpenSearch:", error);
+      return false;
+    }
+
+    return newProduct;
+  }
+
+  async deleteProductById(id: string): Promise<string | false> {
+    // 1. Remove from postgre
+    const deletedId: string = await productRepositories.deleteProduct(id); // return the product_id
+
+    // 2. remove from OpenSearch
+    if (deletedId) {
+      try {
+        await searchRepositories.deleteProduct(id);
+      } catch (error) {
+        console.error("Failed to delete product from OpenSearch:", error);
+        return false;
+      }
+    }
+    return deletedId;
   }
 }
 

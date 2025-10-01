@@ -1,0 +1,19 @@
+# Abaikan folder dependensi lokal
+node_modules
+
+# Abaikan folder hasil build
+dist
+build
+
+# Abaikan file log npm
+npm-debug.log
+
+# Abaikan file environment, jangan masukkan ke dalam image
+.env
+
+# Abaikan folder Git
+.git
+.github
+
+# Abaikan file konfigurasi editor
+.vscode

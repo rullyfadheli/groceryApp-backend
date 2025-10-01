@@ -93,6 +93,7 @@ class OrdersController {
    * @param {Response} response - The Express response object.
    */
   public async addToCart(response: Response): Promise<void> {
+    console.log(this.product_id);
     if (!this.product_id || !this.user_id) {
       response
         .status(400)
