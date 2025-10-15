@@ -1,4 +1,5 @@
 import userRepositories from "../repositories/userRepositories.js";
+import postgres from "postgres";
 
 class UserServices {
   public async register({
@@ -126,6 +127,19 @@ class UserServices {
       return true;
     } catch (err) {
       console.log(err);
+      return false;
+    }
+  }
+
+  public async resetPassword(
+    newPassword: string,
+    user_id: string
+  ): Promise<postgres.RowList<postgres.Row[]> | false> {
+    try {
+      const reset = await userRepositories.resetPassword(newPassword, user_id);
+      return reset;
+    } catch (error) {
+      console.log(error);
       return false;
     }
   }

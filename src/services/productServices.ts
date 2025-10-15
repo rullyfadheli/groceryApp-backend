@@ -24,6 +24,19 @@ class ProductServices {
     }
   }
 
+  public async getSimilarProduct(
+    category: string,
+    productID: string
+  ): Promise<boolean | postgres.RowList<postgres.Row[]>> {
+    try {
+      const product: postgres.RowList<postgres.Row[]> =
+        await productRepositories.getSimilarProduct(category, productID);
+      return product;
+    } catch (err) {
+      return false;
+    }
+  }
+
   public async getProductBestDeal(): Promise<
     boolean | postgres.RowList<postgres.Row[]>
   > {

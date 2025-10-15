@@ -118,6 +118,49 @@ class ProductControllers {
     }
   }
 
+  public async getSimilarProduct(
+    request: Request,
+    response: Response
+  ): Promise<void | Product> {
+    const category: string = request.query.category as string;
+    const productID: string = request.query.productID as string;
+    if (!category) {
+      response
+        .status(400)
+        .send(JSON.stringify([{ message: "Please provide the category" }]));
+      return;
+    }
+
+    try {
+      // parsedCategory = stringCategory as string;
+
+      // console.log(parsedCategory);
+      const product: boolean | postgres.RowList<postgres.Row[]> =
+        await productServices.getSimilarProduct(category, productID);
+      // console.log(product);
+
+      if (!product || !Array.isArray(product) || product.length === 0) {
+        response
+          .status(400)
+          .json([{ message: "Failed to fetch the data from DB" }]);
+        return;
+      }
+
+      const responseData = product.map((items) => ({
+        ...items,
+        final_price:
+          items.price - (items.price * items.discount_percentage) / 100,
+      }));
+
+      response.status(200).json(responseData);
+      return;
+    } catch (err) {
+      console.log(err);
+      response.status(500).json([{ message: "Failed to fetch data from DB" }]);
+      return;
+    }
+  }
+
   public async getBestDealProduct(response: Response): Promise<void | Product> {
     const result = await productServices.getProductBestDeal();
 
@@ -155,7 +198,7 @@ class ProductControllers {
 
     const { name, sku, price, detail, category }: ProductData = request.body;
 
-    const file = request?.file;
+    const file: Express.Multer.File | undefined = request?.file;
 
     if (!name || !sku || !price || !detail || !file || !category) {
       response.status(400).json([{ message: "Please fill required fields" }]);

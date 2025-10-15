@@ -21,4 +21,12 @@ addressRouter.post(
   }
 );
 
+addressRouter.delete(
+  "/delete-address",
+  verifyToken.verifyUser,
+  (request: Request, response: Response) => {
+    new AddressController(request).removeAddressByUserId(response);
+  }
+);
+
 export default addressRouter;

@@ -202,22 +202,105 @@ class OrdersController {
    * @param {Response} response - The Express response object.
    */
   public async deleteCartItem(response: Response): Promise<void> {
-    const isItemInCart = await this._verifyItemInCart(response);
-    if (!isItemInCart) return;
+    try {
+      const isItemInCart: postgres.Row[] | null = await this._verifyItemInCart(
+        response
+      );
+      if (!isItemInCart) return;
 
-    const isItemDeleted = await orderServices.deleteCartItem(
-      this.user_id!,
-      this.product_id!
-    );
+      const isItemDeleted: boolean = await orderServices.deleteCartItem(
+        this.user_id!,
+        this.product_id!
+      );
 
-    if (!isItemDeleted) {
+      if (!isItemDeleted) {
+        response
+          .status(400)
+          .json([{ message: "Failed to delete item from cart." }]);
+        return;
+      }
+
+      response.status(200).json([{ message: "Item deleted from the cart." }]);
+    } catch (err) {
+      console.log(err);
       response
-        .status(400)
-        .json([{ message: "Failed to delete item from cart." }]);
+        .status(500)
+        .json([
+          { message: "Server error, failed to delete the item from cart" },
+        ]);
       return;
     }
+  }
 
-    response.status(200).json([{ message: "Item deleted from the cart." }]);
+  public async getCompletedOrders(response: Response): Promise<void> {
+    try {
+      if (!this.user_id) {
+        response.status(401).json([{ message: "Access denied" }]);
+        return;
+      }
+
+      const dbResponse: false | postgres.RowList<postgres.Row[]> =
+        await orderServices.getCompletedOrders(this.user_id);
+
+      console.log(dbResponse);
+
+      if (!dbResponse) {
+        response
+          .status(500)
+          .json([{ message: " Server error! Failed to fetch ordered items" }]);
+        return;
+      }
+
+      const final_response = dbResponse.map((items) => {
+        const discount_percentage = items?.discount_percentage || 0;
+        const final_price: number =
+          items.price - (items.price * discount_percentage) / 100;
+        return { ...items, final_price };
+      });
+
+      response.status(200).json(final_response);
+    } catch (err) {
+      console.log(err);
+      response
+        .status(500)
+        .json([{ message: " Server error! Failed to fetch ordered items" }]);
+      return;
+    }
+  }
+
+  public async getUpcomingOrders(response: Response): Promise<void> {
+    try {
+      if (!this.user_id) {
+        response.status(401).json([{ message: " Access denied!" }]);
+        return;
+      }
+
+      const success: false | postgres.RowList<postgres.Row[]> =
+        await orderServices.getUpcomingOrders(this.user_id);
+
+      if (!success) {
+        response
+          .status(500)
+          .json([{ message: " Server error! Failed to fetch ordered items" }]);
+        return;
+      }
+
+      const updatePrice = success.map((items) => {
+        const discount: number =
+          items.price - (items.price * items.discount_percentage) / 100;
+
+        return { ...items, final_price: discount };
+      });
+
+      response.status(200).json(updatePrice);
+      return;
+    } catch (err) {
+      console.log(err);
+      response
+        .status(500)
+        .json([{ message: " Server error! Failed to fetch ordered items" }]);
+      return;
+    }
   }
 }
 

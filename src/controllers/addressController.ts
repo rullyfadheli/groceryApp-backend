@@ -11,12 +11,14 @@ class AddressController {
   private latitude?: number;
   private longtitude?: number;
   private label?: string;
+  private address_id?: string;
 
   constructor(request: Request) {
     this.user_id = request.user.id;
     this.latitude = request.body?.lat;
     this.longtitude = request.body?.lng;
     this.label = request.body?.label;
+    this.address_id = request.body?.address_id;
   }
 
   public async getAddressByUserId(
@@ -32,6 +34,8 @@ class AddressController {
     try {
       const address: boolean | postgres.RowList<postgres.Row[]> =
         await AddressServices.instance.getAddressByUserId(this.user_id);
+
+      // console.log(address)
 
       if (address && Array.isArray(address)) {
         const filteredAddress = address.map(({ user_id, ...items }) => {
@@ -102,6 +106,51 @@ class AddressController {
     } catch (error) {
       console.log(error);
       return response.status(500).json([{ message: "Internal server error" }]);
+    }
+  }
+
+  public async removeAddressByUserId(response: Response): Promise<void> {
+    try {
+      // console.log(this.address_id);
+      if (!this.user_id) {
+        response
+          .status(403)
+          .json([{ message: "Invalid user data, please login" }]);
+        return;
+      }
+
+      if (!this.address_id) {
+        response.status(400).json([{ message: "No address_id provided" }]);
+        return;
+      }
+
+      const dbResponse: false | postgres.RowList<postgres.Row[]> =
+        await AddressServices.instance.deleteAddressByUserId(
+          this.user_id,
+          this.address_id
+        );
+
+      console.log(dbResponse);
+
+      if (!dbResponse) {
+        response
+          .status(500)
+          .json([
+            { message: "Failed to delete the address, please try again later" },
+          ]);
+        return;
+      }
+
+      response
+        .status(200)
+        .json([{ message: "The address was deleted successfully" }]);
+      return;
+    } catch (error) {
+      console.log(error);
+      response
+        .status(500)
+        .json([{ message: "Server error, please try again later" }]);
+      return;
     }
   }
 }

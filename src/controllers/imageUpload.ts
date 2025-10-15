@@ -1,6 +1,5 @@
 import ImageKit from "imagekit";
 import dotenv from "dotenv";
-import { buffer } from "stream/consumers";
 dotenv.config();
 const imageKit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY as string,
@@ -16,7 +15,6 @@ class UploadImage {
   constructor(fileBuffer: Buffer, name: string) {
     this.file = fileBuffer;
     this.fileName = name;
-    // this.fileType =
   }
 
   public async uploadImage() {

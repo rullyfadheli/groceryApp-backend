@@ -18,10 +18,14 @@ userRouter.post("/login", (request: Request, response: Response) => {
   user.login(response);
 });
 
-userRouter.put("/logout", (request: Request, response: Response) => {
-  const user = new UserController(request);
-  user.logout(response);
-});
+userRouter.put(
+  "/logout",
+  verifyToken.verifyUser,
+  (request: Request, response: Response) => {
+    const user = new UserController(request);
+    user.logout(response);
+  }
+);
 
 userRouter.get("/token", (request: Request, response: Response) => {
   const user = new UserController(request);
@@ -47,6 +51,22 @@ userRouter.put(
   verifyToken.verifyUser,
   (request: Request, response: Response) => {
     const user = new UserController(request).editUserProfile(response);
+  }
+);
+
+userRouter.post(
+  "/request-reset-password",
+  // verifyToken.verifyUser,
+  (request: Request, response: Response) => {
+    new UserController(request).passwordResetRequest(response);
+  }
+);
+
+userRouter.post(
+  "/reset-password",
+  verifyToken.verifyChangePassword,
+  (request: Request, response: Response) => {
+    new UserController(request).resetPassword(response);
   }
 );
 

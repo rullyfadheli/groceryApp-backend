@@ -1,10 +1,11 @@
-import express from "express";
+import express, { response } from "express";
 import { Request, Response } from "express";
 
 // import http from "http";
 
 import OrdersController from "../controllers/ordersController.js";
 import verifyToken from "../controllers/verifyToken.js";
+import { request } from "http";
 const orderRoutes = express.Router();
 
 orderRoutes.get(
@@ -53,13 +54,20 @@ orderRoutes.delete(
   }
 );
 
-// orderRoutes.get(
-//   "/cart-total-price",
-//   verifyToken.verifyUser,
-//   (req: Request, res: Response) => {
-//     const order = new OrdersController(req);
-//     order.getTotalPrice(res);
-//   }
-// );
+orderRoutes.get(
+  "/completed-orders",
+  verifyToken.verifyUser,
+  (request, response) => {
+    new OrdersController(request).getCompletedOrders(response);
+  }
+);
+
+orderRoutes.get(
+  "/upcoming-orders",
+  verifyToken.verifyUser,
+  (req: Request, res: Response) => {
+    new OrdersController(req).getUpcomingOrders(res);
+  }
+);
 
 export default orderRoutes;

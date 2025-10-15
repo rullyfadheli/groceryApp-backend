@@ -16,7 +16,7 @@ class SearchRepository {
         query: {
           multi_match: {
             query: query,
-            fields: ["name", "description"],
+            fields: ["name", "description", "category"],
             fuzziness: "AUTO",
           },
         },

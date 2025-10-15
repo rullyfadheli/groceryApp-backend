@@ -10,13 +10,18 @@ class SendMail {
     this.token = user_token;
   }
 
-  public async sendMail() {
+  public async sendMail(): Promise<boolean> {
     const gmail = process.env.USER_GMAIL as string;
     const password = process.env.GMAIL_PASSWORD as string;
 
     if (!gmail || !password) {
       return false;
     }
+
+    if (!this.email || !this.token) {
+      return false;
+    }
+
     const transporter = nodemailer.createTransport({
       service: " gmail",
       auth: {
@@ -36,6 +41,47 @@ class SendMail {
         subject: "Email verification",
         text: content,
       });
+      return true;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
+
+  public async sendResetPasswordMail(): Promise<boolean> {
+    const gmail = process.env.USER_GMAIL as string;
+    const password = process.env.GMAIL_PASSWORD as string;
+
+    if (!gmail || !password) {
+      return false;
+    }
+
+    if (!this.email || !this.token) {
+      return false;
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: gmail,
+        pass: password,
+      },
+    });
+
+    const content: string = `
+    Welcome to FR Grocery, please click the link below to reset your password. This link will be expire in 5 minutes, don't share it to anyone!
+
+
+    http://localhost:3000/reset-password?token=${this.token}`;
+
+    try {
+      transporter.sendMail({
+        from: gmail,
+        to: this.email,
+        subject: "Reset password",
+        text: content,
+      });
+      return true;
     } catch (err) {
       console.log(err);
       return false;

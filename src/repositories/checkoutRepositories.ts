@@ -6,11 +6,12 @@ class CheckoutRepository {
     order_id: string,
     amount: number,
     delivery_status: boolean,
-    payment_status: string
+    payment_status: string,
+    delivery_address: string
   ): Promise<void> {
     const query = await sql`
-    INSERT INTO orders (user_id, order_id, amount, delivery_status, payment_status) values (
-      ${user_id}, ${order_id}, ${amount}, ${delivery_status}, ${payment_status})
+    INSERT INTO orders (user_id, order_id, amount, delivery_status, payment_status, delivery_address) values (
+      ${user_id}, ${order_id}, ${amount}, ${delivery_status}, ${payment_status}, ${delivery_address})
     `;
     console.log("Order created:", query);
   }

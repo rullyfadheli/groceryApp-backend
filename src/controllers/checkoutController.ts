@@ -10,6 +10,8 @@ import { OrderData, Item } from "../types/checkoutType.js";
 import checkoutServices from "../services/checkoutServices.js";
 import orderServices from "../services/orderServices.js";
 import couponServices from "../services/couponServices.js";
+import userServices from "../services/userServices.js";
+import AddressServices from "../services/addressServices.js";
 
 dotenv.config();
 
@@ -37,6 +39,7 @@ class CheckoutController {
   private coupon_code?: string;
   private order_id?: string;
   private payment_order_id?: string;
+  private address_id?: string;
 
   constructor(req: Request) {
     this.user_id = req.user.id;
@@ -44,6 +47,7 @@ class CheckoutController {
     this.coupon_code = req.body?.coupon_code;
     this.order_id = req.query?.order_id as string;
     this.payment_order_id = req.body?.order_id;
+    this.address_id = req.body?.address_id;
   }
   public async getAccessToken(): Promise<string> {
     const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
@@ -84,6 +88,11 @@ class CheckoutController {
         return;
       }
 
+      if (!this.address_id) {
+        res.status(400).json({ error: "Address does not provided!" });
+        return;
+      }
+
       const shoppingCart: boolean | postgres.RowList<postgres.Row[]> =
         await orderServices.getShoppingCart(this.user_id);
 
@@ -101,8 +110,8 @@ class CheckoutController {
       const price: number = shoppingCart.reduce((sum, item) => {
         const itemPrice =
           Number(item.price - (item.price * item.discount_percentage) / 100) ||
-          0; // Default to 0 if not a valid number
-        const itemQuantity = Number(item.quantity) || 0; // Default to 0 if not a valid number
+          0; // Default to 0 if it's not a valid number
+        const itemQuantity = Number(item.quantity) || 0; // Default to 0 if it's not a valid number
         return sum + itemPrice * itemQuantity;
       }, 0);
 
@@ -162,9 +171,18 @@ class CheckoutController {
       const shoppingCartData = shoppingCart.map(
         ({ id, created_at, quantity, price, ...rest }) => rest
       );
-      // console.log(shoppingCartData);
+      console.log(shoppingCartData);
       // console.log(response.data.id);
 
+      const fetchAddress: boolean | postgres.RowList<postgres.Row[]> =
+        await new AddressServices().getAddressByUserId(this.user_id);
+
+      if (!fetchAddress) {
+        res.status(404).json([{ message: "Address was not registered yet" }]);
+        return;
+      }
+
+      const delivery_address = fetchAddress[0].address as string;
       const order_id: string = response.data.id;
       const payment_status: string = "PENDING";
       const delivery_status: boolean = false;
@@ -179,16 +197,30 @@ class CheckoutController {
       // console.log(orderData);
 
       // Inserting order data into the database
-      await checkoutServices.createOrder(
+      const insertOrderData: boolean = await checkoutServices.createOrder(
         this.user_id as string,
         order_id,
         amount,
         delivery_status,
-        payment_status
+        payment_status,
+        delivery_address
       );
 
+      if (!insertOrderData) {
+        res.status(500).json([{ message: "Failed to process your order" }]);
+        return;
+      }
+
       // Inserting order items into the database
-      await checkoutServices.insertOrderItems(orderData);
+      const insertOrderedItems: boolean =
+        await checkoutServices.insertOrderItems(orderData);
+
+      if (!insertOrderedItems) {
+        res
+          .status(500)
+          .json([{ message: "Server error! Failed to process your order" }]);
+        return;
+      }
 
       // // Find the approval link from the response
       const approvalLink = response.data.links.find(

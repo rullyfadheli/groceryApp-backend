@@ -51,11 +51,6 @@ class OrderRepositories {
   }
 
   public async deleteMultipeCartItems(userId: string, productIds: string[]) {
-    // Do nothing if there are no product IDs to delete
-    if (!userId || productIds.length === 0) {
-      return;
-    }
-
     // The sql(productIds) helper correctly formats the array for the IN clause
     await sql`
     DELETE FROM shopping_cart
@@ -82,6 +77,48 @@ class OrderRepositories {
       SET payment_status = ${status}
       WHERE order_id = ${order_id} AND user_id = ${user_id}
     `;
+    return query;
+  }
+
+  public async getCompletedOrders(user_id: string) {
+    const query = await sql`
+    SELECT o.*,
+    oi.quantity,
+    p.name,
+    p.price, 
+    p.image,
+    p.id AS product_id,
+    p.serial_id,
+    d.discount_percentage,
+    ur.rating
+    FROM orders o
+    LEFT JOIN ordered_items oi ON o.order_id = oi.order_id
+    LEFT JOIN products p ON oi.product_id = p.id
+    LEFT JOIN discount d ON p.id = d.product_id
+    LEFT JOIN user_reviews ur ON ur.user_id = ${user_id} AND ur.product_id = p.id
+    WHERE o.delivery_status = TRUE AND o.user_id = ${user_id}
+    `;
+
+    return query;
+  }
+
+  public async getUpcomingOrders(user_id: string) {
+    const query = await sql`
+    SELECT 
+    o.*,
+    oi.product_id,
+    oi.quantity,
+    p.name,
+    p.price,
+    p.image,
+    p.stock,
+    d.discount_percentage
+    FROM orders o
+    LEFT JOIN ordered_items oi ON o.order_id = oi.order_id
+    LEFT JOIN products p ON oi.product_id = p.id
+    LEFT JOIN discount d ON p.id = d.product_id
+    WHERE o.delivery_status = FALSE`;
+
     return query;
   }
 }

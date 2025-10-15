@@ -17,7 +17,7 @@ services:
 
   opensearch:
     image: opensearchproject/opensearch:2.11.0
-    container_name: my-opensearch
+    # container_name: my-opensearch
     environment:
       - cluster.name=opensearch-cluster
       - discovery.type=single-node

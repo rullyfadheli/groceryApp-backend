@@ -7,7 +7,8 @@ class checkoutServices {
     order_id: string,
     amount: number,
     delivery_status: boolean,
-    payment_status: string
+    payment_status: string,
+    delivery_address: string
   ): Promise<boolean> {
     try {
       await checkoutRepositories.createOrder(
@@ -15,7 +16,8 @@ class checkoutServices {
         order_id,
         amount,
         delivery_status,
-        payment_status
+        payment_status,
+        delivery_address
       );
       return true;
     } catch (error) {

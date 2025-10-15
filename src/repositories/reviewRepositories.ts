@@ -17,6 +17,24 @@ class UserRepositories {
 
     return query;
   }
+
+  public async submitReview(
+    user_id: string,
+    product_id: string,
+    comment: string,
+    rating: number
+  ) {
+    const query = await sql`INSERT INTO user_reviews 
+    (user_id, product_id, comment, rating) 
+    VALUES (${user_id}, ${product_id}, ${comment}, ${rating})
+    ON CONFLICT (user_id, product_id)
+    DO UPDATE SET comment = EXCLUDED.comment,
+                  rating = EXCLUDED.rating,
+                  created_at = NOW() 
+    RETURNING *`;
+
+    return query;
+  }
 }
 
 export default new UserRepositories();

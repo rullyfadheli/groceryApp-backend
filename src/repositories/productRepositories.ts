@@ -22,6 +22,18 @@ class ProductRepositories {
     return query;
   }
 
+  public async getSimilarProduct(category: string, productID: string) {
+    // console.log(category);
+    const query = await sql`
+    SELECT 
+    p.*,
+    d.discount_percentage
+     from products p
+    LEFT JOIN discount d ON p.id = d.product_id 
+    WHERE category = ${category} AND p.id != ${productID} LIMIT 10`;
+    return query;
+  }
+
   public async getBestDeal() {
     const query = await sql`
     SELECT p.*,

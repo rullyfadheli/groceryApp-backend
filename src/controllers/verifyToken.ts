@@ -7,6 +7,8 @@ class VerifyToken {
       const authHeader = req.headers["authorization"];
       const token = authHeader && authHeader.split(" ")[1];
 
+      // console.log(token);
+
       if (!token) {
         res.status(401).json({ message: "No token provided" });
         return;
@@ -17,6 +19,45 @@ class VerifyToken {
       jwt.verify(
         token,
         ACCESS_TOKEN_SECRET,
+        (
+          err: jwt.VerifyErrors | null,
+          decoded: string | jwt.JwtPayload | undefined
+        ) => {
+          if (err) {
+            res.status(403).json({ message: "Access denied" });
+            return;
+          }
+          // console.log(decoded);
+          req.user = decoded;
+          next();
+        }
+      );
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+      return;
+    }
+  }
+
+  public verifyChangePassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const authHeader = req.headers["authorization"];
+      const token = authHeader && authHeader.split(" ")[1];
+
+      if (!token) {
+        res.status(401).json({ message: "No token provided" });
+        return;
+      }
+
+      const RESET_PASSWORD_SECRET = process.env.RESET_PASSWORD_SECRET as string;
+
+      if (!RESET_PASSWORD_SECRET) {
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+
+      jwt.verify(
+        token,
+        RESET_PASSWORD_SECRET,
         (
           err: jwt.VerifyErrors | null,
           decoded: string | jwt.JwtPayload | undefined

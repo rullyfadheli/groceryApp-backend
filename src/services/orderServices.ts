@@ -103,6 +103,31 @@ class OrderServices {
       return false;
     }
   }
+
+  public async getCompletedOrders(
+    user_id: string
+  ): Promise<false | RowList<Row[]>> {
+    try {
+      const order_list: RowList<Row[]> =
+        await orderRepositories.getCompletedOrders(user_id);
+      return order_list;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  public async getUpcomingOrders(
+    user_id: string
+  ): Promise<false | RowList<Row[]>> {
+    try {
+      const upcoming_orders: RowList<Row[]> =
+        await orderRepositories.getUpcomingOrders(user_id);
+      return upcoming_orders;
+    } catch (error) {
+      return false;
+    }
+  }
 }
 
 export default new OrderServices();

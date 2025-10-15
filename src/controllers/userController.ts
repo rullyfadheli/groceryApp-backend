@@ -21,6 +21,7 @@ class UserController {
   private user_id?: string;
   private verify_email_token?: string;
   private auth_email?: string;
+  private reset_password?: string;
 
   constructor(request: Request) {
     this.username = request.body?.username;
@@ -31,6 +32,7 @@ class UserController {
     this.verify_email_token = request.query?.token as string;
     this.auth_email = request?.user?.email;
     this.user_id = request?.user?.id;
+    this.reset_password = request?.body?.reset_password;
   }
 
   // Register
@@ -195,7 +197,8 @@ class UserController {
         return;
       }
 
-      const userData = await userServices.getUserByEmail(this.email as string);
+      const userData: false | postgres.RowList<postgres.Row[]> =
+        await userServices.getUserByEmail(this.email as string);
 
       if (!userData || !userData[0]) {
         response
@@ -221,7 +224,7 @@ class UserController {
         access_token = jwt.sign(
           {
             id: userData[0].id,
-            username: this.username,
+            username: userData[0].username,
             email: this.email,
           },
           ACCESS_TOKEN_SECRET,
@@ -231,7 +234,7 @@ class UserController {
         refresh_token = jwt.sign(
           {
             id: userData[0].id,
-            username: this.username,
+            username: userData[0].username,
             email: this.email,
           },
           REFRESH_TOKEN_SECRET,
@@ -259,6 +262,10 @@ class UserController {
 
       response.cookie("refresh_token", refresh_token, {
         maxAge: 1000 * 60 * 60 * 24 * 2,
+        path: "/",
+        // sameSite: "none",
+        // secure: false,
+        // httpOnly: true,
       });
 
       response.status(200).json([{ access_token }]);
@@ -274,28 +281,173 @@ class UserController {
 
   // Logout
   public async logout(response: Response): Promise<void> {
-    console.log(this.email);
-    if (!this.email) {
-      response.status(400).json([{ message: "Server error, email not found" }]);
-      return;
-    }
+    try {
+      console.log(this.auth_email);
+      if (!this.auth_email) {
+        response
+          .status(400)
+          .json([{ message: "Server error, email not found" }]);
+        return;
+      }
 
-    const res = await userServices.logoutUser(this.email);
-    if (!res) {
+      const res: boolean = await userServices.logoutUser(this.auth_email);
+      if (!res) {
+        response
+          .status(400)
+          .json([{ message: "Server error, failed to logout" }]);
+        return;
+      }
+
+      response.clearCookie("refresh_token", {
+        path: "/",
+        // sameSite: "none",
+        // secure: false,
+        // httpOnly: true,
+      });
+      response.status(200).json([{ message: "Logout success" }]);
+      return;
+    } catch (err) {
+      console.log(err);
       response
-        .status(400)
-        .json([{ message: "Server error, failed to logout" }]);
+        .status(500)
+        .json([{ message: "Server error, failed to signout" }]);
       return;
     }
+  }
 
-    response.clearCookie("FRgrocery");
-    response.status(200).json([{ message: "Logout success" }]);
+  async passwordResetRequest(response: Response): Promise<void> {
+    try {
+      const RESET_PASSWORD_SECRET = process.env.RESET_PASSWORD_SECRET as string;
+
+      if (!RESET_PASSWORD_SECRET) {
+        response.status(500).json([{ message: "Server misconfiguration" }]);
+        return;
+      }
+
+      if (!this.email) {
+        response.status(400).json([{ message: "Please input your email" }]);
+        return;
+      }
+
+      // if (!this.user_id || !this.auth_email) {
+      //   response.status(404).json([{ message: "User is not found" }]);
+      //   return;
+      // }
+
+      const verifyUser: false | postgres.RowList<postgres.Row[]> =
+        await userServices.getUserByEmail(this.email);
+
+      if (!verifyUser) {
+        response.status(404).json([{ message: "User is not found" }]);
+        return;
+      }
+
+      const jwtPayload = {
+        id: verifyUser[0].id,
+        email: this.auth_email,
+        password: this.reset_password,
+      };
+
+      const token: string = jwt.sign(jwtPayload, RESET_PASSWORD_SECRET, {
+        expiresIn: "5m",
+      });
+
+      if (!token) {
+        response
+          .status(500)
+          .json([{ message: "Server error, please try again later" }]);
+        return;
+      }
+
+      const sendMail: boolean = await new SendMail(
+        this.email,
+        token
+      ).sendResetPasswordMail();
+
+      if (!sendMail) {
+        response
+          .status(500)
+          .json([{ message: "Failed to send the verification email" }]);
+        return;
+      }
+
+      response.status(200).json([
+        {
+          message:
+            "We've sent a reset password email to your account, please check your inbox",
+        },
+      ]);
+      return;
+    } catch (err) {
+      console.log(err);
+      response
+        .status(500)
+        .json([
+          { message: "Reset password request failed, please try again later" },
+        ]);
+    }
     return;
+  }
+
+  async resetPassword(response: Response): Promise<void> {
+    try {
+      if (!this.reset_password) {
+        response
+          .status(400)
+          .json([{ message: "Please type your new password" }]);
+        return;
+      }
+
+      console.log(this.user_id);
+
+      if (!this.user_id) {
+        response.status(404).json([{ message: "User is not found" }]);
+        return;
+      }
+
+      const salt: string = await bcrypt.genSalt(10);
+
+      const hashedPassword: string = await bcrypt.hash(
+        this.reset_password,
+        salt
+      );
+
+      if (!hashedPassword) {
+        response.status(500).json([
+          {
+            message: "Failed to reset your password, please try again later",
+          },
+        ]);
+        return;
+      }
+
+      const dbResponse: false | postgres.RowList<postgres.Row[]> =
+        await userServices.resetPassword(hashedPassword, this.user_id);
+
+      if (!dbResponse) {
+        response
+          .status(500)
+          .json([{ message: "Server error, failed to reset password" }]);
+      }
+
+      response
+        .status(200)
+        .json([{ message: "Password was reseted successfully" }]);
+      return;
+    } catch (error) {
+      console.log(error);
+      response
+        .status(500)
+        .json([{ message: "Server error, failed to reset password" }]);
+      return;
+    }
   }
 
   // Refreshing session token
   public async generateUserToken(response: Response): Promise<void> {
     try {
+      console.log("cookie" + this.refresh_token);
+
       if (!this.refresh_token) {
         // console.log(this.refresh_token);
         response
@@ -327,10 +479,12 @@ class UserController {
         email: string;
       };
 
+      console.log(decoded_token);
+
       const { id, username, email } = decoded_token;
 
       if (!id || !username || !email) {
-        response.redirect("localhost:3000/login");
+        response.redirect("http://localhost:3000/login");
         return;
       }
 
@@ -341,6 +495,8 @@ class UserController {
           expiresIn: "10m",
         }
       );
+
+      console.log("access_token" + newAccessToken);
 
       response.status(200).json([{ access_token: newAccessToken }]);
       return;
@@ -366,17 +522,22 @@ class UserController {
         return;
       }
 
-      const address: String[] = getDataFromDB.map(({ address }) => address);
+      const address = getDataFromDB.map(({ address, address_id }) => ({
+        id: address_id,
+        address,
+      }));
       // console.log(address);
 
-      const userProfile = getDataFromDB.map(({ address, ...rest }) => ({
-        ...rest,
-      }));
+      const userProfile = getDataFromDB.map(
+        ({ address, address_id, ...rest }) => ({
+          ...rest,
+        })
+      );
 
-      const finalData = [userProfile[0], address] as UserProfileData;
+      const finalData = [userProfile[0], address] as unknown as UserProfileData;
       // console.log(finalData);
 
-      response.status(200).json(finalData as UserProfileData);
+      response.status(200).json(finalData);
       return;
     } catch (err) {
       console.log(err);

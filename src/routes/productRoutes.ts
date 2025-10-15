@@ -6,6 +6,7 @@ import express from "express";
 import verifyAdminToken from "../controllers/verifyToken.js";
 
 import multer from "multer";
+import verifyToken from "../controllers/verifyToken.js";
 const upload = multer();
 const productRouter = express.Router();
 
@@ -22,6 +23,14 @@ productRouter.get(
   }
 );
 
+productRouter.get(
+  "/similar-product",
+  (request: Request, response: Response) => {
+    const product = new ProductController(request);
+    product.getSimilarProduct(request, response);
+  }
+);
+
 productRouter.get("/best-deal", (request: Request, response: Response) => {
   const product = new ProductController(request);
   product.getBestDealProduct(response);
@@ -30,6 +39,7 @@ productRouter.get("/best-deal", (request: Request, response: Response) => {
 productRouter.post(
   "/upload-product",
   upload.single("file"),
+  verifyToken.verifyAdmin,
   (request: Request, response: Response) => {
     const product = new ProductController(request);
     product.insertNewProduct(request, response);

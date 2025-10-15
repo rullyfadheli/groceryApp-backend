@@ -5,7 +5,7 @@ class AddressServices {
 
   public async getAddressByUserId(
     id: string
-  ): Promise<postgres.RowList<postgres.Row[]> | boolean> {
+  ): Promise<postgres.RowList<postgres.Row[]> | false> {
     try {
       const query: postgres.RowList<postgres.Row[]> =
         await AddressRepositories.instance.getAddressByUserId(id);
@@ -32,6 +32,23 @@ class AddressServices {
         lng
       );
       return true;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
+
+  async deleteAddressByUserId(
+    user_id: string,
+    address_id: string
+  ): Promise<false | postgres.RowList<postgres.Row[]>> {
+    try {
+      const data: postgres.RowList<postgres.Row[]> =
+        await AddressRepositories.instance.removeAddressByUserId(
+          user_id,
+          address_id
+        );
+      return data;
     } catch (err) {
       console.log(err);
       return false;

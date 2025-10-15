@@ -65,7 +65,8 @@ class UserRepositories {
       u.profile_picture, 
       u.mobile, 
       u.created_at,
-      addr.address 
+      addr.address,
+      addr.id as address_id 
       FROM users u 
       LEFT JOIN address addr 
       ON u.id = addr.user_id 
@@ -109,6 +110,16 @@ class UserRepositories {
       email = ${email}
   WHERE id = ${id}
 `;
+    return query;
+  }
+
+  public async resetPassword(newPassword: string, user_id: string) {
+    const query = await sql`
+  UPDATE users
+  SET password = ${newPassword}
+  WHERE  id = ${user_id}
+  RETURNING *`;
+
     return query;
   }
 }
