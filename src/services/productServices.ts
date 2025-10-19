@@ -56,6 +56,7 @@ class ProductServices {
     detail: string;
     image: string;
     category: string;
+    stock: number;
   }): Promise<boolean | postgres.RowList<postgres.Row[]>> {
     try {
       await productRepositories.insertNewproduct(productData);
@@ -123,6 +124,7 @@ class ProductServices {
     detail: string;
     image: string;
     category: string;
+    stock: number;
   }): Promise<boolean | postgres.RowList<postgres.Row[]>> {
     if (productData.price <= 0) {
       throw new Error("Price must be positive");
@@ -138,12 +140,43 @@ class ProductServices {
           newProduct as unknown as ProductData
         );
       }
+
+      return newProduct;
     } catch (error) {
       console.error("Failed to index product in OpenSearch:", error);
       return false;
     }
+  }
 
-    return newProduct;
+  async updateProductInfo(productData: {
+    name: string;
+    sku: string;
+    price: number;
+    detail: string;
+    image: string;
+    category: string;
+    stock: number;
+  }): Promise<boolean | postgres.RowList<postgres.Row[]>> {
+    if (productData.price <= 0) {
+      throw new Error("Price must be positive");
+    }
+
+    // 1. Insert into Postgre
+    const newProduct = await this.insertNewProduct(productData);
+
+    // 2. Index into OpenSearch
+    try {
+      if (newProduct) {
+        await searchRepositories.indexProduct(
+          newProduct as unknown as ProductData
+        );
+      }
+
+      return newProduct;
+    } catch (error) {
+      console.error("Failed to index product in OpenSearch:", error);
+      return false;
+    }
   }
 
   async deleteProductById(id: string): Promise<string | false> {

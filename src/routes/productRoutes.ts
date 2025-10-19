@@ -3,8 +3,6 @@ import ProductController from "../controllers/productController.js";
 import express from "express";
 
 // middleware
-import verifyAdminToken from "../controllers/verifyToken.js";
-
 import multer from "multer";
 import verifyToken from "../controllers/verifyToken.js";
 const upload = multer();

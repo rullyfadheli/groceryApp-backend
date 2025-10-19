@@ -53,6 +53,7 @@ class ProductRepositories {
     detail,
     image,
     category,
+    stock,
   }: {
     name: string;
     sku: string;
@@ -60,15 +61,43 @@ class ProductRepositories {
     detail: string;
     image: string;
     category: string;
+    stock: number;
   }) {
     if (!name || !sku || !price || !detail || !image || !category) {
       return "Please input required fields";
     }
     const query = await sql`INSERT INTO products 
-    (name, sku, price, detail, image, category)
-     values (${name}, ${sku}, ${price}, ${detail},${image},${category})`;
+    (name, sku, price, detail, image, category, stock)
+     values (${name}, ${sku}, ${price}, ${detail},${image},${category}, ${stock})`;
 
     console.log(query);
+  }
+
+  async updateProductInfo({
+    id,
+    name,
+    sku,
+    price,
+    detail,
+    image,
+    category,
+    stock,
+  }: {
+    id: string;
+    name: string;
+    sku: string;
+    price: number;
+    detail: string;
+    image: string;
+    category: string;
+    stock: number;
+  }) {
+    const query = await sql`
+      UPDATE products 
+      (name, sku, price, detail, image, category, stock) 
+      VALUES (${name}, ${sku}, ${price}, ${detail}, ${image}, ${category}, ${stock}) 
+      WHERE id = ${id} RETURNING *`;
+    return query;
   }
 
   public async getProductById(product_id: string) {
