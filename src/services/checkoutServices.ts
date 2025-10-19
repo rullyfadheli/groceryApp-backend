@@ -27,7 +27,12 @@ class checkoutServices {
   }
 
   public async insertOrderItems(
-    orderData: { product_id: string; order_id: string; user_id: string }[]
+    orderData: {
+      product_id: string;
+      order_id: string;
+      user_id: string;
+      quantity: number;
+    }[]
   ): Promise<boolean> {
     try {
       await checkoutRepositories.insertOrderItems(orderData);

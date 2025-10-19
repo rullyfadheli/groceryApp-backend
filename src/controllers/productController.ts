@@ -194,17 +194,18 @@ class ProductControllers {
       detail: string;
       image: string;
       category: number;
+      stock: number;
     };
 
-    const { name, sku, price, detail, category }: ProductData = request.body;
+    const { name, sku, price, detail, category, stock }: ProductData =
+      request.body;
 
     const file: Express.Multer.File | undefined = request?.file;
 
-    if (!name || !sku || !price || !detail || !file || !category) {
+    if (!name || !sku || !price || !detail || !file || !category || !stock) {
       response.status(400).json([{ message: "Please fill required fields" }]);
       return;
     }
-
     const categoryCode = Number(category);
 
     let parsedCategory: string = "";
@@ -264,9 +265,99 @@ class ProductControllers {
       detail,
       image: imageUrl,
       category: parsedCategory,
+      stock,
     });
 
     response.status(200).json({ message: "Upload success" });
+    return;
+  }
+
+  public async editProduct(
+    request: Request,
+    response: Response
+  ): Promise<void> {
+    type ProductData = {
+      name: string;
+      sku: string;
+      price: number;
+      detail: string;
+      image: string;
+      category: number;
+      stock: number;
+    };
+
+    const { name, sku, price, detail, category, stock }: ProductData =
+      request.body;
+
+    const file: Express.Multer.File | undefined = request?.file;
+
+    if (!name || !sku || !price || !detail || !file || !category || !stock) {
+      response.status(400).json([{ message: "Please fill required fields" }]);
+      return;
+    }
+    const categoryCode = Number(category);
+
+    let parsedCategory: string = "";
+    switch (categoryCode) {
+      case 1:
+        parsedCategory = "vegetables & Fruits";
+        break;
+      case 2:
+        parsedCategory = "Dairy & Breakfast";
+        break;
+      case 3:
+        parsedCategory = "Cold Drinks & Juices";
+        break;
+      case 4:
+        parsedCategory = "Instant & Frozen Food";
+        break;
+      case 5:
+        parsedCategory = "Tea & Coffee";
+        break;
+      case 6:
+        parsedCategory = "Rice";
+        break;
+      case 7:
+        parsedCategory = "Oil";
+        break;
+      case 8:
+        parsedCategory = "Chicken, Meat & Fish";
+        break;
+      default:
+        response.status(400).json({
+          message: "Invalid category code",
+        });
+        return;
+    }
+
+    const uploader = new UploadImage(
+      file.buffer as Buffer,
+      file.originalname as string
+    );
+
+    const result = await uploader.uploadImage();
+    uploader.cleanup();
+
+    if (!result) {
+      response.status(400).json({
+        message: "Failed to upload image",
+      });
+      return;
+    }
+
+    const imageUrl = result;
+
+    productServices.updateProductInfo({
+      name,
+      sku,
+      price,
+      detail,
+      image: imageUrl,
+      category: parsedCategory,
+      stock,
+    });
+
+    response.status(200).json({ message: "Update product success" });
     return;
   }
 

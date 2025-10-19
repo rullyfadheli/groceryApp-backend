@@ -42,7 +42,7 @@ class CheckoutController {
   private address_id?: string;
 
   constructor(req: Request) {
-    this.user_id = req.user.id;
+    this.user_id = req.user?.id;
     this.capture_checkout_url = req.body?.url;
     this.coupon_code = req.body?.coupon_code;
     this.order_id = req.query?.order_id as string;
@@ -169,7 +169,7 @@ class CheckoutController {
       // console.log(response);
 
       const shoppingCartData = shoppingCart.map(
-        ({ id, created_at, quantity, price, ...rest }) => rest
+        ({ id, created_at, price, ...rest }) => rest
       );
       console.log(shoppingCartData);
       // console.log(response.data.id);
@@ -192,6 +192,7 @@ class CheckoutController {
         product_id: items.product_id,
         order_id,
         user_id: items.user_id,
+        quantity: items.quantity,
       }));
 
       // console.log(orderData);
@@ -234,6 +235,19 @@ class CheckoutController {
       // console.log(captureLink);
 
       if (approvalLink) {
+        // Marking the coupon code that was used by the user to be "used"
+        if (this.coupon_code) {
+          const removeCoupon = await couponServices.addRedeemedCoupon(
+            this.user_id,
+            this.coupon_code
+          );
+
+          if (!removeCoupon) {
+            res.status(500).json([{ message: "Failed to redeem coupon" }]);
+            return;
+          }
+        }
+
         // Send the approval link back to the frontend
         res.status(200).json([
           {
@@ -243,6 +257,7 @@ class CheckoutController {
             coupon_code: this.coupon_code,
           },
         ] as PaypalUrl[]);
+
         return;
       } else {
         res.status(500).json({ error: "Could not find PayPal approval link." });

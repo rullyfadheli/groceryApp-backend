@@ -38,7 +38,7 @@ class CouponRepositories {
 
   public async addRedeemedCoupon(user_id: string, coupon_code: string) {
     const query =
-      await sql`INSERT INTO redeemed_coupon (user_id, coupon_code) VALUES (${user_id}. ${coupon_code})`;
+      await sql`INSERT INTO redeemed_coupon (user_id, coupon_code) VALUES (${user_id}, ${coupon_code})`;
     return query;
   }
 }

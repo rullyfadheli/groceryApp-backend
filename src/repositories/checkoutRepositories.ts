@@ -17,13 +17,19 @@ class CheckoutRepository {
   }
 
   public async insertOrderItems(
-    orderData: { product_id: string; order_id: string; user_id: string }[]
+    orderData: {
+      product_id: string;
+      order_id: string;
+      user_id: string;
+      quantity: number;
+    }[]
   ): Promise<void> {
-    await sql`INSERT INTO  ordered_items ${sql(
+    await sql`INSERT INTO ordered_items ${sql(
       orderData,
       "product_id",
       "order_id",
-      "user_id"
+      "user_id",
+      "quantity"
     )}`;
   }
 
