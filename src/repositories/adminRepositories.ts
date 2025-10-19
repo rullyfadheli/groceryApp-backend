@@ -1,4 +1,4 @@
-import sql from "../config/database.js";
+import sql from "../config/database.ts";
 
 class AdminRepositories {
   public static async getAdminDataByEmail(email: string) {
@@ -15,6 +15,16 @@ class AdminRepositories {
       await sql`INSERT INTO admins (name, email, password) VALUES (${name}, ${email}, ${password}) RETURNING *`;
 
     return query;
+  }
+
+  public static async updateRefreshToken(
+    admin_id: string,
+    refresh_token: string
+  ) {
+    const query = await sql`
+    UPDATE admins SET refresh_token = ${refresh_token}
+    WHERE id = ${admin_id}
+    `;
   }
 }
 

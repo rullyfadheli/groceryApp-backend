@@ -15,4 +15,8 @@ adminRouter.post("/login-admin", (req: Request, res: Response) => {
   new AdminController(req).login(res);
 });
 
+adminRouter.get("/admin-token", (req: Request, res: Response) => {
+  new AdminController(req).generateAdminToken(res);
+});
+
 export default adminRouter;

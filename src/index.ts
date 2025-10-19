@@ -18,6 +18,7 @@ import reviewRouter from "./routes/reviewRoutes.js";
 import wishlistRouter from "./routes/wishlistRoutes.js";
 import addressRouter from "./routes/addressRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
+import statisticRouter from "./routes/statisticRoutes.js";
 const app = express();
 
 app.use(cookieParser());
@@ -65,7 +66,10 @@ app.use("/api", reviewRouter);
 app.use("/api", wishlistRouter);
 app.use("/api", addressRouter);
 app.use("/api", adminRouter);
+app.use("/api", statisticRouter);
 
 app.listen(port, () => {
   console.log("App is running at port " + port);
 });
+
+export default app;

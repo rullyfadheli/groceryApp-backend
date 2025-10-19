@@ -1,4 +1,4 @@
-import AdminRepositories from "../repositories/adminRepositories.js";
+import AdminRepositories from "../repositories/adminRepositories.ts";
 import postgres from "postgres";
 
 class AdminServices {
@@ -25,6 +25,19 @@ class AdminServices {
       return true;
     } catch (error) {
       console.log(error);
+      return false;
+    }
+  }
+
+  public static async updateRefreshToken(
+    admin_id: string,
+    refresh_token: string
+  ): Promise<boolean> {
+    try {
+      await AdminRepositories.updateRefreshToken(admin_id, refresh_token);
+      return true;
+    } catch (err) {
+      console.log(err);
       return false;
     }
   }

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 class VerifyToken {
   public verifyUser(req: Request, res: Response, next: NextFunction) {
@@ -28,7 +28,7 @@ class VerifyToken {
             return;
           }
           // console.log(decoded);
-          req.user = decoded;
+          req.user = decoded as JwtPayload;
           next();
         }
       );
@@ -67,7 +67,7 @@ class VerifyToken {
             return;
           }
           // console.log(decoded);
-          req.user = decoded;
+          req.user = decoded as JwtPayload;
           next();
         }
       );
@@ -83,31 +83,49 @@ class VerifyToken {
     next: NextFunction
   ): Promise<void> {
     try {
-      const admin_token = req.headers.authorization as string;
+      const client_token = req.headers.authorization as string;
 
-      if (!admin_token) {
+      if (!client_token) {
         res.status(401).json([{ message: "Access denied" }]);
         return;
       }
 
-      const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET as string;
+      const admin_token = client_token.split(" ")[1];
+
+      // console.log(admin_token);
+
+      const ACCESS_TOKEN_SECRET = process.env
+        .ADMIN_ACCESS_TOKEN_SECRET as string;
 
       if (!ACCESS_TOKEN_SECRET) {
         res.status(400).json([{ message: "Server misconfiguration" }]);
         return;
       }
 
-      const decoded_token = jwt.verify(admin_token, ACCESS_TOKEN_SECRET);
+      const decoded_token = jwt.verify(
+        admin_token,
+        ACCESS_TOKEN_SECRET
+      ) as JwtPayload;
 
-      const { role } = decoded_token as { role: string };
-
-      if (role !== "admin") {
+      if (!decoded_token) {
         res.status(401).json([{ message: "Access denied" }]);
         return;
       }
 
+      const { role } = decoded_token as { role: string };
+      console.log(role);
+
+      const allowedRoles: string[] = ["admin", "super admin"];
+
+      if (!allowedRoles.includes(role)) {
+        res.status(401).json([{ message: "Access denied" }]);
+      }
+
+      req.user = decoded_token;
+
       next();
     } catch (err) {
+      console.log(err);
       res.status(401).json([{ message: "Access denied" }]);
       return;
     }
