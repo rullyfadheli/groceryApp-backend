@@ -2,12 +2,9 @@ import statisticRepositories from "../repositories/statisticRepositories";
 import { RowList, Row } from "postgres";
 
 class StatisticServices {
-  public async getMostPopularProductInLast5Months(): Promise<
-    false | RowList<Row[]>
-  > {
+  public async getMonthlySales(): Promise<false | RowList<Row[]>> {
     try {
-      const success =
-        await statisticRepositories.getMostPopularProductInLast5Months();
+      const success = await statisticRepositories.getAllMonthlyProductSales();
 
       return success;
     } catch (err) {

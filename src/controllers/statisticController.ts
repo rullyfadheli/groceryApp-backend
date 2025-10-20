@@ -17,7 +17,7 @@ class StatisticController {
       }
 
       const success: false | postgres.RowList<postgres.Row[]> =
-        await statisticServices.getMostPopularProductInLast5Months();
+        await statisticServices.getMonthlySales();
 
       if (!success) {
         res
@@ -25,6 +25,8 @@ class StatisticController {
           .json([{ message: "Server error, failed to fetch the data" }]);
         return;
       }
+
+      console.log(success);
 
       if (success.length === 0) {
         res.status(404).json([{ message: "Data was not found" }]);

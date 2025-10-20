@@ -1,19 +1,19 @@
 import sql from "../config/database";
 
 class StatisticRepositories {
-  public async getMostPopularProductInLast5Months() {
+  public async getAllMonthlyProductSales() {
     const query = await sql`
-    SELECT
-    COUNT(oi.id) AS total_orders,
-    SUM (oi.quantity) AS total_quantity
-    FROM ordered_items oi
-    JOIN products p ON oi.product_id = p.id
-    WHERE oi.created_at >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '4 months'
-    AND oi.created_at < DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month'
-    GROUP BY p.category
-    ORDER BY total_quantity 
-    `;
-
+  SELECT
+  oi.product_id,
+  p.name AS product_name,
+  SUM(oi.quantity) AS total_quantity_sold,
+  RANK() OVER (ORDER BY SUM(oi.quantity) DESC) AS rank
+  FROM ordered_items oi
+  JOIN products p ON oi.product_id = p.id
+  WHERE DATE_TRUNC('month', oi.created_at) = DATE_TRUNC('month', CURRENT_DATE)
+  GROUP BY oi.product_id, p.name
+  ORDER BY total_quantity_sold DESC
+  LIMIT 10;`;
     return query;
   }
 }

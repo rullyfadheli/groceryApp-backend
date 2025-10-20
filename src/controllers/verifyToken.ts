@@ -113,7 +113,7 @@ class VerifyToken {
       }
 
       const { role } = decoded_token as { role: string };
-      console.log(role);
+      // console.log(role);
 
       const allowedRoles: string[] = ["admin", "super admin"];
 
