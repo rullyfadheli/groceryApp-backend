@@ -135,7 +135,7 @@ class AdminController {
       }
 
       response.cookie("refresh_token", refresh_token, {
-        maxAge: 1000 * 60 * 60 * 2,
+        maxAge: 1000 * 60 * 60 * 24 * 2,
         path: "/",
         httpOnly: true,
       });

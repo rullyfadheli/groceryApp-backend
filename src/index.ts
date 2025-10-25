@@ -7,7 +7,10 @@ import session from "express-session";
 import { Server } from "socket.io";
 import http from "http";
 
-// route
+// controllers
+import ChatController from "./controllers/chatController.js";
+
+// routes
 import productRouter from "./routes/productRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
@@ -19,6 +22,7 @@ import wishlistRouter from "./routes/wishlistRoutes.js";
 import addressRouter from "./routes/addressRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
 import statisticRouter from "./routes/statisticRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 const app = express();
 
 app.use(cookieParser());
@@ -41,7 +45,10 @@ const io = new Server(server, {
   },
 });
 
-io.use((socket, next) => {});
+io.on("connect", (socket) => {
+  console.log("socket connected");
+  ChatController.handleChat(io, socket);
+});
 
 app.use(
   session({
@@ -67,8 +74,9 @@ app.use("/api", wishlistRouter);
 app.use("/api", addressRouter);
 app.use("/api", adminRouter);
 app.use("/api", statisticRouter);
+app.use("/api", messageRoutes);
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log("App is running at port " + port);
 });
 
