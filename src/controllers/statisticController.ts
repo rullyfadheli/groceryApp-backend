@@ -41,6 +41,45 @@ class StatisticController {
       return;
     }
   }
+
+  public async getMonthlyRevenue(res: Response): Promise<void> {
+    try {
+      if (!this.admin_id) {
+        res.status(401).json([{ message: "Access denied" }]);
+        return;
+      }
+
+      const success: false | postgres.RowList<postgres.Row[]> =
+        await statisticServices.getMonthlyRevenue();
+
+      if (!success) {
+        res.status(500).json([
+          {
+            message: "Failed to fetch the data",
+          },
+        ]);
+        return;
+      }
+
+      const formattedData = success.map((items) => {
+        const date = new Date(items.month);
+        const formatDate = date.toLocaleDateString("US", {
+          month: "long",
+          year: "numeric",
+        });
+        return { ...items, month: formatDate };
+      });
+
+      res.status(200).json(formattedData);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json([
+        {
+          message: "Failed to fetch the data",
+        },
+      ]);
+    }
+  }
 }
 
 export default StatisticController;

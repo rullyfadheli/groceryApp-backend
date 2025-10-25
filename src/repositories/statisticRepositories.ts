@@ -16,6 +16,17 @@ class StatisticRepositories {
   LIMIT 10;`;
     return query;
   }
+
+  public async getMonthlyRevenue() {
+    const query = await sql`
+    SELECT
+    SUM(o.amount) AS monthly_revenue,
+    DATE_TRUNC('month', o.created_at) AS month
+    FROM orders o
+    WHERE o.delivery_status = TRUE
+    GROUP BY month;`;
+    return query;
+  }
 }
 
 export default new StatisticRepositories();

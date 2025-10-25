@@ -13,4 +13,12 @@ statisticRouter.get(
   }
 );
 
+statisticRouter.get(
+  "/monthly-revenue",
+  verifyToken.verifyAdmin,
+  (req: Request, res: Response) => {
+    new StatisticController(req).getMonthlyRevenue(res);
+  }
+);
+
 export default statisticRouter;
