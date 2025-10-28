@@ -21,4 +21,12 @@ statisticRouter.get(
   }
 );
 
+statisticRouter.get(
+  "/popular-category",
+  verifyToken.verifyAdmin,
+  (req: Request, res: Response) => {
+    new StatisticController(req).getMostPopularCategory(res);
+  }
+);
+
 export default statisticRouter;

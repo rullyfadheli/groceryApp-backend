@@ -1,5 +1,4 @@
-import { google } from "googleapis";
-import sql from "../config/database.js";
+import sql from "../config/database";
 
 class UserRepositories {
   public async register({
@@ -119,6 +118,15 @@ class UserRepositories {
   SET password = ${newPassword}
   WHERE  id = ${user_id}
   RETURNING *`;
+
+    return query;
+  }
+
+  public async getTotalUsers() {
+    const query = await sql`
+    SELECT 
+    COUNT(id) as total_users
+    FROM users`;
 
     return query;
   }

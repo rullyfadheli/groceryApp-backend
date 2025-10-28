@@ -70,4 +70,12 @@ userRouter.post(
   }
 );
 
+userRouter.get(
+  "/total-users",
+  verifyToken.verifyAdmin,
+  (req: Request, res: Response) => {
+    new UserController(req).getTotalUsers(res);
+  }
+);
+
 export default userRouter;

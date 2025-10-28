@@ -150,7 +150,6 @@ class ChatController {
         }
       }
     );
-
     // Handle disconnection
     socket.on("disconnect", () => {
       if (socket.user) {

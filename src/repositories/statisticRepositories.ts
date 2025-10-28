@@ -27,6 +27,22 @@ class StatisticRepositories {
     GROUP BY month;`;
     return query;
   }
+
+  public async getMostPopularCategoryThisMonth() {
+    const query = await sql`
+    SELECT 
+    SUM(oi.quantity) AS items_sold,
+    p.category,
+    RANK() OVER (ORDER BY SUM(oi.quantity) DESC) AS rank
+    FROM ordered_items oi
+    JOIN products p ON oi.product_id = p.id
+    WHERE DATE_TRUNC('month', oi.created_at) = DATE_TRUNC('month', CURRENT_DATE)
+    GROUP BY p.category
+    ORDER BY items_sold DESC
+    `;
+
+    return query;
+  }
 }
 
 export default new StatisticRepositories();

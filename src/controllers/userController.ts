@@ -5,12 +5,12 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Types
-import type { UserProfileData } from "../types/UserType.js";
+import type { UserProfileData } from "../types/UserType";
 import postgres from "postgres";
 
 // Services
-import userServices from "../services/userServices.js";
-import SendMail from "./sendMail.js";
+import userServices from "../services/userServices";
+import SendMail from "./sendMail";
 
 class UserController {
   private username?: string;
@@ -23,6 +23,9 @@ class UserController {
   private auth_email?: string;
   private reset_password?: string;
 
+  // Admin access
+  private admin_id?: string;
+
   constructor(request: Request) {
     this.username = request.body?.username;
     this.password = request.body?.password;
@@ -33,6 +36,7 @@ class UserController {
     this.auth_email = request?.user?.email;
     this.user_id = request?.user?.id;
     this.reset_password = request?.body?.reset_password;
+    this.admin_id = request?.user?.id;
   }
 
   // Register
@@ -459,7 +463,7 @@ class UserController {
       const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET as string;
       const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET as string;
 
-      if (!REFRESH_TOKEN_SECRET) {
+      if (!REFRESH_TOKEN_SECRET || !ACCESS_TOKEN_SECRET) {
         response.status(400).json([{ message: "Server misconfiguration" }]);
         return;
       }
@@ -579,6 +583,28 @@ class UserController {
         .status(400)
         .json([{ message: "Server error, failed to update profile" }]);
       return;
+    }
+  }
+
+  public async getTotalUsers(res: Response): Promise<Response> {
+    if (!this.admin_id) {
+      return res.status(403).json([{ message: "Access denied" }]);
+    }
+    try {
+      const success = await userServices.getTotalUsers();
+
+      if (!success) {
+        return res
+          .status(500)
+          .json([{ message: "Server error, failed to fetch total users" }]);
+      }
+
+      return res.status(200).json(success);
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(500)
+        .json([{ message: "Server error, failed to fetch total users" }]);
     }
   }
 }

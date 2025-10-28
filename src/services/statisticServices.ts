@@ -22,6 +22,19 @@ class StatisticServices {
       return false;
     }
   }
+
+  public async getMostPopularProductThisMonth(): Promise<RowList<
+    Row[]
+  > | null> {
+    try {
+      const data: RowList<Row[]> =
+        await statisticRepositories.getMostPopularCategoryThisMonth();
+      return data;
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
 }
 
 export default new StatisticServices();

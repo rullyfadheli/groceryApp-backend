@@ -80,6 +80,26 @@ class StatisticController {
       ]);
     }
   }
+
+  public async getMostPopularCategory(res: Response): Promise<Response> {
+    if (!this.admin_id) {
+      return res.status(403).json([{ message: "Access denied" }]);
+    }
+
+    try {
+      const success: postgres.RowList<postgres.Row[]> | null =
+        await statisticServices.getMostPopularProductThisMonth();
+
+      if (!success) {
+        return res.status(500).json([{ message: "Internal server error" }]);
+      }
+
+      return res.status(200).json(success);
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json([{ message: "Internal server error" }]);
+    }
+  }
 }
 
 export default StatisticController;

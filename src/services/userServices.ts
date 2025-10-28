@@ -1,4 +1,4 @@
-import userRepositories from "../repositories/userRepositories.js";
+import userRepositories from "../repositories/userRepositories";
 import postgres from "postgres";
 
 class UserServices {
@@ -140,6 +140,16 @@ class UserServices {
       return reset;
     } catch (error) {
       console.log(error);
+      return false;
+    }
+  }
+
+  public async getTotalUsers() {
+    try {
+      const users = await userRepositories.getTotalUsers();
+      return users;
+    } catch (err) {
+      console.log(err);
       return false;
     }
   }
