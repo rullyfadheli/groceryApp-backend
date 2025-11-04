@@ -24,7 +24,8 @@ class StatisticRepositories {
     DATE_TRUNC('month', o.created_at) AS month
     FROM orders o
     WHERE o.delivery_status = TRUE
-    GROUP BY month;`;
+    GROUP BY month
+    LIMIT 6;`;
     return query;
   }
 

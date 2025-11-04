@@ -1,4 +1,4 @@
-import sql from "../config/database.js";
+import sql from "../config/database";
 
 class OrderRepositories {
   public async getShoppingCart(user_id: string) {
@@ -118,6 +118,23 @@ class OrderRepositories {
     LEFT JOIN products p ON oi.product_id = p.id
     LEFT JOIN discount d ON p.id = d.product_id
     WHERE o.delivery_status = FALSE`;
+
+    return query;
+  }
+
+  public async getAdminOrderList() {
+    const query = await sql`
+    SELECT 
+    o.order_id AS orderid,
+    u.username AS customerName,
+    o.created_at AS orderDate,
+    o.amount AS totalPrice,
+    o.payment_status AS status,
+    o.delivery_status AS deliveryStatus
+    FROM orders o 
+    LEFT JOIN users u ON o.user_id = u.id
+    ORDER BY o.created_at DESC
+    `;
 
     return query;
   }

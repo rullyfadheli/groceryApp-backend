@@ -1,4 +1,4 @@
-import sql from "../config/database.js";
+import sql from "../config/database";
 
 class ProductRepositories {
   public async getAllProduct() {

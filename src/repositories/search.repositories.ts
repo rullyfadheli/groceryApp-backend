@@ -1,10 +1,10 @@
 /**
  * This repository handles all communication with OpenSearch.
  */
-import osClient from "../config/opensearch-client.js";
+import osClient from "../config/opensearch-client";
 
 // Types
-import type { ProductData } from "../types/productType.js";
+import type { ProductData } from "../types/productType";
 
 const indexName = "products";
 
@@ -23,7 +23,9 @@ class SearchRepository {
       },
     });
 
-    const data = body.hits.hits.map((hit) => hit._source);
+    const data: ProductData[] = body.hits.hits.map(
+      (hit: { _source: ProductData }) => hit._source
+    );
     return data;
   }
 

@@ -70,4 +70,12 @@ orderRoutes.get(
   }
 );
 
+orderRoutes.get(
+  "/order-list",
+  verifyToken.verifyAdmin,
+  (req: Request, res: Response) => {
+    new OrdersController(req).getAdminOrderList(res);
+  }
+);
+
 export default orderRoutes;

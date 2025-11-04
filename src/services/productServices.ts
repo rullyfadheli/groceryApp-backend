@@ -1,5 +1,5 @@
-import productRepositories from "../repositories/productRepositories.js";
-import searchRepositories from "../repositories/search.repositories.js";
+import productRepositories from "../repositories/productRepositories";
+import searchRepositories from "../repositories/search.repositories";
 
 // Types
 import type { ProductData } from "../types/productType.js";

@@ -1,4 +1,4 @@
-import orderRepositories from "../repositories/orderRepositories.js";
+import orderRepositories from "../repositories/orderRepositories";
 import { RowList } from "postgres";
 import { Row } from "postgres";
 
@@ -126,6 +126,17 @@ class OrderServices {
       return upcoming_orders;
     } catch (error) {
       return false;
+    }
+  }
+
+  public async getAdminOrderList(): Promise<RowList<Row[]> | null> {
+    try {
+      const result: RowList<Row[]> =
+        await orderRepositories.getAdminOrderList();
+      return result;
+    } catch (err) {
+      console.log(err);
+      return null;
     }
   }
 }

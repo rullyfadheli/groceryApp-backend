@@ -70,6 +70,12 @@ class StatisticController {
         return { ...items, month: formatDate };
       });
 
+      let totalRevenue: number = 0;
+
+      for (let i: number = 0; i < success.length; i++) {
+        totalRevenue += parseFloat(success[i].monthly_revenue);
+      }
+
       res.status(200).json(formattedData);
     } catch (err) {
       console.log(err);

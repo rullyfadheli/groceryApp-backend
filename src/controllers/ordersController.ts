@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import postgres from "postgres";
 
-import orderServices from "../services/orderServices.js";
-import productServices from "../services/productServices.js";
+import orderServices from "../services/orderServices";
+import productServices from "../services/productServices";
 
 // Types
 import type { OrderItem } from "../types/orderType.js";
-import type { ErrorMessage } from "../types/errorType.js";
 
 /**
  * @class OrdersController
@@ -17,6 +16,7 @@ class OrdersController {
   private user_id?: string;
   private product_id?: string;
   private coupon_code?: string;
+  private role?: string;
 
   /**
    * Initializes the controller with data from the incoming request.
@@ -26,6 +26,7 @@ class OrdersController {
     this.user_id = request.user?.id as string;
     this.product_id = request.body?.product_id as string;
     this.coupon_code = request.query?.coupon_code as string;
+    this.role = request.user?.role as string;
   }
 
   /**
@@ -300,6 +301,28 @@ class OrdersController {
         .status(500)
         .json([{ message: " Server error! Failed to fetch ordered items" }]);
       return;
+    }
+  }
+
+  public async getAdminOrderList(res: Response) {
+    if (!this.role) {
+      return res.status(401).json([{ message: "Access denied" }]);
+    }
+
+    try {
+      const success: postgres.RowList<postgres.Row[]> | null =
+        await orderServices.getAdminOrderList();
+
+      if (!success) {
+        return res
+          .status(500)
+          .json([{ message: "Failed to fetch data from server" }]);
+      }
+
+      return res.status(200).json(success);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json([{ message: "Internal server error" }]);
     }
   }
 }
