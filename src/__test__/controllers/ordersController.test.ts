@@ -12,14 +12,15 @@ describe("OrdersController", () => {
 
   beforeEach(() => {
     jsonMock = jest.fn();
-    statusMock = jest.fn().mockImplementation(() => {
-      return responseMock as Response;
-    });
 
     responseMock = {
       status: statusMock,
       json: jsonMock,
     };
+
+    statusMock = jest.fn().mockImplementation(() => {
+      return responseMock as Response;
+    });
 
     requestMock = {};
   });
