@@ -135,13 +135,17 @@ class ProductServices {
 
     // 2. Index into OpenSearch
     try {
-      if (newProduct) {
-        await searchRepositories.indexProduct(
-          newProduct as unknown as ProductData
-        );
-      }
+      // if (newProduct) {
+      //   await searchRepositories.indexProduct(
+      //     newProduct as unknown as ProductData
+      //   );
+      // }
 
-      return newProduct;
+      if (newProduct) {
+        return true;
+      } else {
+        return false;
+      }
     } catch (error) {
       console.error("Failed to index product in OpenSearch:", error);
       return false;
@@ -162,17 +166,22 @@ class ProductServices {
     }
 
     // 1. Insert into Postgre
-    const newProduct = await this.insertNewProduct(productData);
+    const newProduct: boolean | postgres.RowList<postgres.Row[]> =
+      await this.insertNewProduct(productData);
 
     // 2. Index into OpenSearch
     try {
-      if (newProduct) {
-        await searchRepositories.indexProduct(
-          newProduct as unknown as ProductData
-        );
-      }
+      // if (newProduct) {
+      //   await searchRepositories.indexProduct(
+      //     newProduct as unknown as ProductData
+      //   );
+      // }
 
-      return newProduct;
+      if (newProduct) {
+        return newProduct;
+      } else {
+        return false;
+      }
     } catch (error) {
       console.error("Failed to index product in OpenSearch:", error);
       return false;
@@ -186,7 +195,8 @@ class ProductServices {
     // 2. remove from OpenSearch
     if (deletedId) {
       try {
-        await searchRepositories.deleteProduct(id);
+        // await searchRepositories.deleteProduct(id);
+        return deletedId;
       } catch (error) {
         console.error("Failed to delete product from OpenSearch:", error);
         return false;

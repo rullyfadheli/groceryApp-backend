@@ -4,7 +4,7 @@ import reviewServices from "../services/reviewServices.js";
 import searchService from "../services/searchService.js";
 
 // Test
-import sync from "../models/sync.js";
+// import sync from "../models/sync.ts";
 
 import type postgres from "postgres";
 
@@ -513,18 +513,18 @@ class ProductControllers {
     }
   }
 
-  public async sync(res: Response) {
-    try {
-      const result = sync();
-      res.status(200).json(result);
-      return;
-    } catch (err) {
-      console.log(err);
-      return res
-        .status(500)
-        .json([{ message: "Failed to sync data to OpenSearch" }]);
-    }
-  }
+  // public async sync(res: Response) {
+  //   try {
+  //     const result = sync();
+  //     res.status(200).json(result);
+  //     return;
+  //   } catch (err) {
+  //     console.log(err);
+  //     return res
+  //       .status(500)
+  //       .json([{ message: "Failed to sync data to OpenSearch" }]);
+  //   }
+  // }
 }
 
 export default ProductControllers;

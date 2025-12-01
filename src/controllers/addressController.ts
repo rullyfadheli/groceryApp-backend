@@ -1,4 +1,4 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 
 // Types
 import { Address } from "../types/addressType.js";
@@ -14,7 +14,7 @@ class AddressController {
   private address_id?: string;
 
   constructor(request: Request) {
-    this.user_id = request.user.id;
+    this.user_id = request.user?.id;
     this.latitude = request.body?.lat;
     this.longtitude = request.body?.lng;
     this.label = request.body?.label;

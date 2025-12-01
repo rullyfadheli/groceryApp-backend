@@ -9,8 +9,6 @@
     "skipLibCheck": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
     "types": ["jest", "node"]
   },
 

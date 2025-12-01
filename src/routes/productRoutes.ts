@@ -69,7 +69,7 @@ productRouter.get("/search-product", (request: Request, response: Response) => {
   new ProductController(request).search(response);
 });
 
-productRouter.get("/sync", (req: Request, res: Response) => {
-  new ProductController(req).sync(res);
-});
+// productRouter.get("/sync", (req: Request, res: Response) => {
+//   new ProductController(req).sync(res);
+// });
 export default productRouter;

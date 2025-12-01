@@ -6,13 +6,13 @@
 // These imports are now implicitly available through your tsconfig.json or the import below.
 import "@jest/globals";
 
-import AdminController from "../../../controllers/adminController.ts";
-import AdminServices from "../../../services/adminServices.ts";
+import AdminController from "../../../controllers/adminController";
+import AdminServices from "../../../services/adminServices";
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 
 // Mock the dependencies to isolate the controller for unit testing.
-jest.mock("../../../services/adminServices.ts");
+jest.mock("../../../services/adminServices");
 jest.mock("bcrypt");
 
 /**

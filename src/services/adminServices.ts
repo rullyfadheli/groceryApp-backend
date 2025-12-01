@@ -1,4 +1,4 @@
-import AdminRepositories from "../repositories/adminRepositories.ts";
+import AdminRepositories from "../repositories/adminRepositories";
 import postgres from "postgres";
 
 class AdminServices {

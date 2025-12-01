@@ -10,23 +10,22 @@ services:
       - .:/app
       - /app/node_modules
     environment:
-      - OPENSEARCH_HOST=http://opensearch:9200
+      # - OPENSEARCH_HOST=http://opensearch:9200
       - NODE_ENV=development
-    depends_on:
-      - opensearch
+    # depends_on:
+    #   - opensearch
+#   opensearch:
+#     image: opensearchproject/opensearch:2.11.0
+#     # container_name: my-opensearch
+#     environment:
+#       - cluster.name=opensearch-cluster
+#       - discovery.type=single-node
+#       - "DISABLE_SECURITY_PLUGIN=true"
+#       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+#     ports:
+#       - "9200:9200"
+#     volumes:
+#       - opensearch-data:/usr/share/opensearch/data
 
-  opensearch:
-    image: opensearchproject/opensearch:2.11.0
-    # container_name: my-opensearch
-    environment:
-      - cluster.name=opensearch-cluster
-      - discovery.type=single-node
-      - "DISABLE_SECURITY_PLUGIN=true"
-      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
-    ports:
-      - "9200:9200"
-    volumes:
-      - opensearch-data:/usr/share/opensearch/data
-
-volumes:
-  opensearch-data:
+# volumes:
+#   opensearch-data:
