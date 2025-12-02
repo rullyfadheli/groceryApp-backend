@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import postgres from "postgres";
 
-import orderServices from "../services/orderServices";
-import productServices from "../services/productServices";
+import orderServices from "../services/orderServices.js";
+import productServices from "../services/productServices.js";
 
 // Types
 import type { OrderItem } from "../types/orderType.js";

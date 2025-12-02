@@ -1,4 +1,4 @@
-import orderRepositories from "../repositories/orderRepositories";
+import orderRepositories from "../repositories/orderRepositories.js";
 import { RowList } from "postgres";
 import { Row } from "postgres";
 

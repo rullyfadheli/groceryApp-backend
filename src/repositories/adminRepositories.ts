@@ -1,4 +1,4 @@
-import sql from "../config/database";
+import sql from "../config/database.js";
 
 class AdminRepositories {
   public static async getAdminDataByEmail(email: string) {

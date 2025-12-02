@@ -2,10 +2,10 @@
  * This repository handles all communication with OpenSearch.
  */
 // import osClient from "../config/opensearch-client";
-import sql from "../config/database";
+import sql from "../config/database.js";
 
 // Types
-import type { ProductData } from "../types/productType";
+import type { ProductData } from "../types/productType.js";
 
 const indexName = "products";
 

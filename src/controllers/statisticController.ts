@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import postgres from "postgres";
-import statisticServices from "../services/statisticServices";
+import statisticServices from "../services/statisticServices.js";
 
 class StatisticController {
   private admin_id?: string;

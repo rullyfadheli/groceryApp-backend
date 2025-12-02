@@ -1,5 +1,5 @@
-import StatisticController from "../controllers/statisticController";
-import verifyToken from "../controllers/verifyToken";
+import StatisticController from "../controllers/statisticController.js";
+import verifyToken from "../controllers/verifyToken.js";
 
 import express, { Response, Request } from "express";
 

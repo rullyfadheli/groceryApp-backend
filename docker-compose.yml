@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: my-app-dev
+    container_name: grocery-app-container
     ports:
       - "3001:3001"
     volumes:
@@ -12,6 +12,9 @@ services:
     environment:
       # - OPENSEARCH_HOST=http://opensearch:9200
       - NODE_ENV=development
+
+    env_file:
+      - .env
     # depends_on:
     #   - opensearch
 #   opensearch:

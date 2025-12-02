@@ -1,4 +1,4 @@
-import sql from "../config/database";
+import sql from "../config/database.js";
 
 class OrderRepositories {
   public async getShoppingCart(user_id: string) {

@@ -1,4 +1,4 @@
-import userRepositories from "../repositories/userRepositories";
+import userRepositories from "../repositories/userRepositories.js";
 import postgres from "postgres";
 
 class UserServices {

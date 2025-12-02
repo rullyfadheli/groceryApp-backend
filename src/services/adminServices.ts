@@ -1,4 +1,4 @@
-import AdminRepositories from "../repositories/adminRepositories";
+import AdminRepositories from "../repositories/adminRepositories.js";
 import postgres from "postgres";
 
 class AdminServices {

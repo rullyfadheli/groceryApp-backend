@@ -5,12 +5,12 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Types
-import type { UserProfileData } from "../types/UserType";
+import type { UserProfileData } from "../types/UserType.js";
 import postgres from "postgres";
 
 // Services
-import userServices from "../services/userServices";
-import SendMail from "./sendMail";
+import userServices from "../services/userServices.js";
+import SendMail from "./sendMail.js";
 
 class UserController {
   private username?: string;

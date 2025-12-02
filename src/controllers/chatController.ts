@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 import postgres from "postgres";
-import MessageServices from "../services/messageServices";
+import MessageServices from "../services/messageServices.js";
 dotenv.config();
 
 /**

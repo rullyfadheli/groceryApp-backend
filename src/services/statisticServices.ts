@@ -1,4 +1,4 @@
-import statisticRepositories from "../repositories/statisticRepositories";
+import statisticRepositories from "../repositories/statisticRepositories.js";
 import { RowList, Row } from "postgres";
 
 class StatisticServices {

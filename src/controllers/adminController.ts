@@ -1,4 +1,4 @@
-import AdminServices from "../services/adminServices";
+import AdminServices from "../services/adminServices.js";
 import postgres from "postgres";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";

@@ -1,5 +1,5 @@
-import verifyToken from "../controllers/verifyToken";
-import ChatController from "../controllers/chatController";
+import verifyToken from "../controllers/verifyToken.js";
+import ChatController from "../controllers/chatController.js";
 import express, { Request, Response } from "express";
 
 const messageRoutes = express.Router();
