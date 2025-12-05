@@ -138,6 +138,7 @@ class AdminController {
         maxAge: 1000 * 60 * 60 * 24 * 2,
         path: "/",
         httpOnly: true,
+        secure: true,
       });
 
       response.status(200).json([{ access_token }]);
@@ -193,7 +194,7 @@ class AdminController {
       const { id, name, email, role } = decoded_refresh_token;
 
       if (!id || !name || !email || !role) {
-        response.redirect("http://localhost:3000/login");
+        response.redirect("https://grocery-five-chi.vercel.app/login");
         return;
       }
       const verifyAdmin: Promise<false | postgres.RowList<postgres.Row[]>> =
@@ -220,7 +221,7 @@ class AdminController {
       return;
     } catch (error) {
       console.log(error);
-      response.redirect("localhost:3000/login");
+      response.redirect("https://grocery-five-chi.vercel.app/login");
     }
   }
 }

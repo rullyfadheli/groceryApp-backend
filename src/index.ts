@@ -25,23 +25,62 @@ import statisticRouter from "./routes/statisticRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 const app = express();
 
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 const port = 3001;
+
+// Trust first proxy (Nginx)
+// Use number 1 to trust only the first proxy in the chain
+app.set("trust proxy", 1);
+
+// Allowed origins for CORS
+const allowedOrigins = [
+  "https://grocery-bnxp98vry-rully-fadhelis-projects.vercel.app",
+  "https://grocery-five-chi.vercel.app",
+  "http://localhost:3000", // for local development
+];
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: function (origin, callback) {
+      // Allow requests with no origin
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
     credentials: true,
     allowedHeaders: ["authorization", "Content-Type"],
   })
 );
 
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET as string,
+    resave: false,
+    saveUninitialized: true,
+    proxy: true, // Required when behind reverse proxy (nginx, etc)
+    cookie: {
+      httpOnly: true,
+      secure: true, // Required for sameSite: "none"
+      sameSite: "none" as const, // CRITICAL for cross-site OAuth flow
+      maxAge: 1000 * 60 * 10, // 10 minutes - enough for OAuth flow
+    },
+  })
+);
+
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // Allow connection from Next.js app
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
@@ -49,19 +88,6 @@ io.on("connect", (socket) => {
   console.log("socket connected");
   ChatController.handleChat(io, socket);
 });
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET as string,
-    resave: false,
-    saveUninitialized: true,
-    // cookie: {
-    //   httpOnly: true,
-    //   secure: true, // true in production with HTTPS
-    //   sameSite: "none",
-    // },
-  })
-);
 
 app.use("/api", couponRouter);
 app.use("/api", checkoutRouter);

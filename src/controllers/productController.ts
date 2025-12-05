@@ -94,7 +94,7 @@ class ProductControllers {
       const product = await productServices.getProductByCategory(
         parsedCategory
       );
-      console.log(product);
+      // console.log(product);
 
       if (!product || !Array.isArray(product) || product.length === 0) {
         response
@@ -178,7 +178,7 @@ class ProductControllers {
       return discount_price;
     });
 
-    console.log(updatedResult);
+    // console.log(updatedResult);
     response.status(200).json(updatedResult);
     return;
   }
@@ -367,7 +367,7 @@ class ProductControllers {
       return;
     }
 
-    console.log(this.productID);
+    // console.log(this.productID);
 
     const result = await productServices.getProductById(
       this.productID as string
@@ -403,7 +403,7 @@ class ProductControllers {
 
     const rating: number = ratingSum / reviewSum;
 
-    console.log(rating);
+    // console.log(rating);
 
     const responseData = {
       ...result[0],
@@ -449,7 +449,7 @@ class ProductControllers {
         .json([{ message: "Product date was not provided" }]);
     }
 
-    console.log(this.serial);
+    // console.log(this.serial);
 
     const data: false | postgres.RowList<postgres.Row[]> =
       await productServices.getProductBySerial(Number(this.serial));
@@ -460,7 +460,7 @@ class ProductControllers {
         .json([{ message: "Oops.. Server error, no product found" }]);
     }
 
-    console.log(data);
+    // console.log(data);
 
     const finalData = data.map((items) => {
       const discountvalue: number =

@@ -31,9 +31,11 @@ class OAuthController {
 
     const state: string = crypto.randomBytes(32).toString("hex");
 
-    // console.log("State:", state);
-
     req.session.state = state as string;
+
+    console.log("[OAuth] Generated state:", state);
+    console.log("[OAuth] Session ID:", req.sessionID);
+    console.log("[OAuth] Session state saved:", req.session.state);
 
     const authorizationUrl: string = oauth2Client.generateAuthUrl({
       access_type: "offline",
@@ -43,11 +45,7 @@ class OAuthController {
       prompt: "consent",
     });
 
-    // console.log(authorizationUrl);
-
     res.redirect(authorizationUrl);
-
-    // return authorizationUrl;
   }
 
   public async handleGoogleCallback(
@@ -62,20 +60,28 @@ class OAuthController {
 
     const q = url.parse(req.url, true).query;
 
+    console.log("[OAuth Callback] Session ID:", req.sessionID);
+    console.log("[OAuth Callback] State from Google:", q.state);
+    console.log("[OAuth Callback] State from session:", req.session.state);
+    console.log("[OAuth Callback] Session object:", req.session);
+
     if (q.error) {
-      console.log("Error:" + q.error);
-      res.redirect("http://localhost:3000/login");
+      console.log("[OAuth Callback] Error from Google:", q.error);
+      res.redirect("https://grocery-five-chi.vercel.app/login");
       return;
     }
 
     if (q.state !== req.session.state) {
-      console.log("State mismatch. Possible CSRF attack");
+      console.log("[OAuth Callback] ❌ State mismatch!");
+      console.log("[OAuth Callback] Expected:", req.session.state);
+      console.log("[OAuth Callback] Received:", q.state);
       res
         .status(401)
         .json([{ message: "State mismatch. Possible CSRF attack" }]);
-
       return;
     }
+
+    console.log("[OAuth Callback] ✅ State verified successfully");
 
     const code = Array.isArray(q.code) ? q.code[0] : q.code;
 
@@ -145,7 +151,7 @@ class OAuthController {
     }
 
     res.redirect(
-      `http://localhost:3000/auth/google/callback?refresh_token=${refresh_token}&access_token=${access_token}`
+      `https://grocery-five-chi.vercel.app/auth/google/callback?refresh_token=${refresh_token}&access_token=${access_token}`
     );
     return;
   }

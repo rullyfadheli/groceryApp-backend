@@ -32,7 +32,7 @@ class SendMail {
 
     const content: string = `Welcome to FR Grocery, please click the 
     link below to complete your registration
-    http://localhost:3000/verify-email?token=${this.token}`;
+    https://grocery-five-chi.vercel.app//verify-email?token=${this.token}`;
 
     try {
       transporter.sendMail({
@@ -72,7 +72,7 @@ class SendMail {
     Welcome to FR Grocery, please click the link below to reset your password. This link will be expire in 5 minutes, don't share it to anyone!
 
 
-    http://localhost:3000/reset-password?token=${this.token}`;
+    https://grocery-five-chi.vercel.app/reset-password?token=${this.token}`;
 
     try {
       transporter.sendMail({

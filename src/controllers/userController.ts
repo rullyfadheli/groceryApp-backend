@@ -267,9 +267,9 @@ class UserController {
       response.cookie("refresh_token", refresh_token, {
         maxAge: 1000 * 60 * 60 * 24 * 2,
         path: "/",
-        // sameSite: "none",
-        // secure: false,
-        // httpOnly: true,
+        sameSite: "none" as const,
+        secure: true,
+        httpOnly: true,
       });
 
       response.status(200).json([{ access_token }]);
@@ -304,9 +304,9 @@ class UserController {
 
       response.clearCookie("refresh_token", {
         path: "/",
-        // sameSite: "none",
-        // secure: false,
-        // httpOnly: true,
+        sameSite: "none" as const,
+        secure: true,
+        httpOnly: true,
       });
       response.status(200).json([{ message: "Logout success" }]);
       return;
@@ -488,7 +488,7 @@ class UserController {
       const { id, username, email } = decoded_token;
 
       if (!id || !username || !email) {
-        response.redirect("http://localhost:3000/login");
+        response.redirect("https://grocery-five-chi.vercel.app/login");
         return;
       }
 
@@ -506,7 +506,7 @@ class UserController {
       return;
     } catch (error) {
       console.log(error);
-      response.redirect("localhost:3000/login");
+      response.redirect("https://grocery-five-chi.vercel.app/login");
     }
   }
 
