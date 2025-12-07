@@ -27,14 +27,12 @@ const app = express();
 
 const port = 3001;
 
-// Trust first proxy (Nginx)
-// Use number 1 to trust only the first proxy in the chain
 app.set("trust proxy", 1);
 
-// Allowed origins for CORS
 const allowedOrigins = [
   "https://grocery-bnxp98vry-rully-fadhelis-projects.vercel.app",
   "https://grocery-five-chi.vercel.app",
+  "https://grocery-rully-fadhelis-projects.vercel.app",
   "http://localhost:3000", // for local development
 ];
 
@@ -61,12 +59,12 @@ app.use(
     secret: process.env.SESSION_SECRET as string,
     resave: false,
     saveUninitialized: true,
-    proxy: true, // Required when behind reverse proxy (nginx, etc)
+    proxy: true,
     cookie: {
       httpOnly: true,
-      secure: true, // Required for sameSite: "none"
-      sameSite: "none" as const, // CRITICAL for cross-site OAuth flow
-      maxAge: 1000 * 60 * 10, // 10 minutes - enough for OAuth flow
+      secure: true,
+      sameSite: "none" as const,
+      maxAge: 1000 * 60 * 10,
     },
   })
 );

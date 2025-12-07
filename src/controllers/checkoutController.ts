@@ -160,8 +160,8 @@ class CheckoutController {
             },
           ],
           application_context: {
-            return_url: "http://localhost:3000/return",
-            cancel_url: "http://localhost:3000/cancel",
+            return_url: "https://grocery-five-chi.vercel.app/return",
+            cancel_url: "https://grocery-five-chi.vercel.app/cancel",
           },
         },
       });
