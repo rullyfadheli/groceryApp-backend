@@ -302,7 +302,8 @@ class UserController {
         return;
       }
 
-      response.clearCookie("refresh_token", {
+      response.cookie("refresh_token", "", {
+        maxAge: 0,
         path: "/",
         sameSite: "none" as const,
         secure: true,
@@ -483,7 +484,7 @@ class UserController {
         email: string;
       };
 
-      console.log(decoded_token);
+      // console.log(decoded_token);
 
       const { id, username, email } = decoded_token;
 
@@ -500,7 +501,7 @@ class UserController {
         }
       );
 
-      console.log("access_token" + newAccessToken);
+      // console.log("access_token" + newAccessToken);
 
       response.status(200).json([{ access_token: newAccessToken }]);
       return;

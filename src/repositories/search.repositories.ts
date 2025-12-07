@@ -32,10 +32,13 @@ class SearchRepository {
 
   async search(query: string) {
     const result = await sql`
-      SELECT * FROM products
-      WHERE name ILIKE ${"%" + query + "%"}
-      OR detail ILIKE ${"%" + query + "%"}
-      OR category ILIKE ${"%" + query + "%"}
+      SELECT p.*,
+      d.discount_percentage
+      FROM products p 
+      LEFT JOIN discount d ON p.id = d.product_id
+      WHERE p.name ILIKE ${"%" + query + "%"}
+      OR p.detail ILIKE ${"%" + query + "%"}
+      OR p.category ILIKE ${"%" + query + "%"}
     `;
     return result;
   }

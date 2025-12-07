@@ -25,16 +25,28 @@ class ProductControllers {
   }
 
   public async getAllProduct(response: Response): Promise<void | Product> {
-    const product = await productServices.getAllProduct();
+    try {
+      const product = await productServices.getAllProduct();
 
-    if (!product || product.length === 0) {
-      response
-        .status(400)
-        .send(JSON.stringify([{ message: "Failed to fetch data from DB" }]));
+      if (!product || product.length === 0) {
+        response
+          .status(400)
+          .send(JSON.stringify([{ message: "Failed to fetch data from DB" }]));
+        return;
+      }
+
+      const updatedProduct = product.map((value) => ({
+        ...value,
+        final_price:
+          value.price - (value.price * value.discount_percentage) / 100,
+      }));
+
+      response.status(200).json(updatedProduct);
       return;
+    } catch (error) {
+      console.log(error);
+      response.status(500).json({ message: "Failed to fetch data from DB" });
     }
-    response.status(200).json(product);
-    return;
   }
 
   public async getProductByCategory(
@@ -499,14 +511,20 @@ class ProductControllers {
           .status(400)
           .json([{ message: "Search keyword is not provided" }]);
       }
-      const results: (Record<string, any> | undefined)[] =
+      const results: postgres.RowList<postgres.Row[]> | [] =
         await searchService.searchProducts(this.keyword);
+
+      const updatedResult = results.map((value) => ({
+        ...value,
+        final_price:
+          value.price - (value.price * value.discount_percentage) / 100,
+      }));
 
       if (!results || !Array.isArray(results) || results.length === 0) {
         return res.status(404).json([{ message: "Product is not found" }]);
       }
 
-      return res.status(200).json(results);
+      return res.status(200).json(updatedResult);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Search failed" });
