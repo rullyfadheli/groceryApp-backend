@@ -4,6 +4,9 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 import postgres from "postgres";
 import MessageServices from "../services/messageServices.js";
+import ChatbotServices, {
+  CHATBOT_SENDER_ID,
+} from "../services/chatbotServices.js";
 dotenv.config();
 
 /**
@@ -17,18 +20,8 @@ interface AuthenticatedSocket extends Socket {
   };
 }
 
-/**
- * A simple in-memory map to track which user is connected to which socket.
- * { user_id -> socket_id }
- * In a multi-server setup, this should be replaced with Redis.
- */
 const userSocketMap = new Map<string, string>();
 
-/**
- * Verifies a JWT token, trying both User and Admin secrets.
- * @param {string} token - The raw JWT token.
- * @returns {JwtPayload | null} The decoded payload or null if invalid.
- */
 const verifyAuthToken = (token: string): JwtPayload | null => {
   if (!token) {
     return null;
@@ -56,11 +49,6 @@ const verifyAuthToken = (token: string): JwtPayload | null => {
 };
 
 class ChatController {
-  /**
-   * Handles new Socket.IO connections and chat event listeners.
-   * @param {Server} io - The main Socket.IO Server instance.
-   * @param {AuthenticatedSocket} socket - The individual client socket.
-   */
   public static async handleChat(io: Server, socket: AuthenticatedSocket) {
     // Authenticate the connection
     const token = socket.handshake.auth.token as string;
@@ -144,6 +132,31 @@ class ChatController {
 
           // Send acknowledgment back to the sender
           callback({ status: "ok", data: saveMessage });
+
+          // --- CHATBOT AUTO-RESPONSE ---
+          // Generate AI response asynchronously (don't block the callback)
+          try {
+            const botResponse = await ChatbotServices.generateResponse(text);
+
+            // Save bot message to database
+            const botMessage = await MessageServices.insertMessage(
+              conversation_id,
+              CHATBOT_SENDER_ID,
+              botResponse
+            );
+
+            if (botMessage) {
+              // Emit bot response back to the sender
+              socket.emit("receiveMessage", botMessage);
+
+              // Also emit to recipient (admin) if online
+              if (recipientSocketId) {
+                io.to(recipientSocketId).emit("receiveMessage", botMessage);
+              }
+            }
+          } catch (botError) {
+            console.error("Chatbot error:", botError);
+          }
         } catch (error) {
           console.log(error);
           callback({ status: "error", message: "Server error." });
