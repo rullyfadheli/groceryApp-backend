@@ -117,8 +117,7 @@ class OrderRepositories {
     LEFT JOIN ordered_items oi ON o.order_id = oi.order_id
     LEFT JOIN products p ON oi.product_id = p.id
     LEFT JOIN discount d ON p.id = d.product_id
-    WHERE o.delivery_status = FALSE`;
-
+    WHERE o.delivery_status = FALSE AND o.user_id = ${user_id}`;
     return query;
   }
 

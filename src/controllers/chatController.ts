@@ -174,13 +174,6 @@ class ChatController {
 
   // --- HTTP ENDPOINTS ---
 
-  /**
-   * [HTTP] Starts or finds a conversation with another user.
-   * Expects { recipient_id: string } in the request body.
-   * @param {Request} req - Express request object (expects req.user).
-   * @param {Response} res - Express response object.
-   * @returns {Promise<Response>} JSON object of the conversation.
-   */
   public static async startConversation(
     req: Request,
     res: Response
@@ -252,51 +245,6 @@ class ChatController {
     }
   }
 
-  /**
-   * [HTTP] Gets the list of all conversations for the logged-in user.
-   * @param {Request} req - Express request object (expects req.user).
-   * @param {Response} res - Express response object.
-   * @returns {Promise<Response>} JSON list of conversations.
-   */
-  // public static async getConversationsBySenderId(
-  //   req: Request,
-  //   res: Response
-  // ): Promise<Response> {
-  //   if (!req.user) {
-  //     return res.status(401).json({ message: "Access denied" });
-  //   }
-
-  //   try {
-  //     const userId = req.user.id as string;
-  //     const conversations: false | postgres.RowList<postgres.Row[]> =
-  //       await MessageServices.getConversationBySenderId(userId);
-
-  //     if (!conversations) {
-  //       return res
-  //         .status(500)
-  //         .json({ message: "Server error, failed to fetch conversations" });
-  //     }
-
-  //     // Handle empty case gracefully
-  //     if (conversations.length === 0) {
-  //       return res.status(200).json([]); // Return empty array, not an error
-  //     }
-
-  //     return res.status(200).json(conversations);
-  //   } catch (err) {
-  //     console.log(err);
-  //     return res
-  //       .status(500)
-  //       .json({ message: "Server error, failed to fetch chat data" });
-  //   }
-  // }
-
-  /**
-   * [HTTP] Gets all messages for a specific conversation.
-   * @param {Request} req - Express request object (expects req.user and req.params.id).
-   * @param {Response} res - Express response object.
-   * @returns {Promise<Response>} JSON list of messages with 'is_sender' flag.
-   */
   public static async getMessagesByConversationId(
     req: Request,
     res: Response
